@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Artisan's Market</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f3e9;
+            color: #4a4a4a;
+        }
+        .hero-bg {
+            background-image: url('https://placehold.co/1200x800/e0d9cf/3d3d3d?text=Hero+Image');
+            background-size: cover;
+            background-position: center;
+        }
+        .icon {
+            color: #6b584d;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Main Container -->
+    <div class="min-h-screen flex flex-col">
+
+        <!-- Header -->
+        <header class="bg-[#f7f3e9] shadow-sm p-4 sticky top-0 z-50">
+            <div class="container mx-auto flex justify-between items-center">
+                <a href="#" class="text-3xl font-bold tracking-tight text-[#6b584d]">The Artisan's Market</a>
+                <nav class="space-x-4 hidden md:flex">
+                    <a href="#" onclick="showPage('homepage-content', true)" class="text-gray-600 hover:text-[#6b584d] transition-colors duration-200">Shop</a>
+                    <a href="#" onclick="showPage('seller-page')" class="text-gray-600 hover:text-[#6b584d] transition-colors duration-200">Sell</a>
+                    <a href="#" onclick="showPage('profile-page')" class="text-gray-600 hover:text-[#6b584d] transition-colors duration-200">Account</a>
+                </nav>
+                <div class="md:hidden">
+                    <button id="menu-btn" class="text-gray-600 focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                </div>
+            </div>
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="hidden md:hidden p-4 bg-[#f7f3e9]">
+                <a href="#" onclick="showPage('homepage-content', true)" class="block py-2 px-4 text-gray-600 hover:bg-gray-200 rounded-md">Shop</a>
+                <a href="#" onclick="showPage('seller-page')" class="block py-2 px-4 text-gray-600 hover:bg-gray-200 rounded-md">Sell</a>
+                <a href="#" onclick="showPage('profile-page')" class="block py-2 px-4 text-gray-600 hover:bg-gray-200 rounded-md">Account</a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow">
+            <!-- Hero Section -->
+            <section id="hero-section" class="hero-bg h-[60vh] flex items-center justify-center p-4 text-center">
+                <div class="bg-white bg-opacity-80 rounded-xl p-8 max-w-2xl mx-auto shadow-lg">
+                    <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-[#6b584d] mb-4">Discover Unique, Handcrafted Creations</h1>
+                    <p class="text-base sm:text-lg text-gray-700 mb-6">Find one-of-a-kind art, jewelry, and home decor made with passion by independent artisans.</p>
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
+                        <button onclick="showPage('homepage-content', true)" class="bg-[#6b584d] text-white py-3 px-8 rounded-full font-semibold hover:bg-[#52443a] transition-colors duration-200 transform hover:scale-105 shadow-md">Shop Now</button>
+                        <button onclick="showPage('seller-page')" class="bg-white text-[#6b584d] border-2 border-[#6b584d] py-3 px-8 rounded-full font-semibold hover:bg-gray-100 transition-colors duration-200 transform hover:scale-105 shadow-md">Start Selling</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main Content Container -->
+            <div id="page-content" class="container mx-auto p-4 md:p-8">
+
+                <!-- Homepage Content (Active by default) -->
+                <section id="homepage-content">
+                    <!-- Featured Categories (Homepage) -->
+                    <section class="py-12">
+                        <h2 class="text-3xl font-bold text-[#6b584d] mb-8 text-center">Shop by Category</h2>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+                            <!-- Category Card 1 -->
+                            <div class="bg-white rounded-lg overflow-hidden shadow-md group transform transition-transform duration-300 hover:scale-105 hover:shadow-xl cursor-pointer" onclick="renderProducts('Jewelry')">
+                                <img src="https://placehold.co/600x400/b8b8b8/ffffff?text=Jewelry" alt="Jewelry" class="w-full h-32 md:h-48 object-cover">
+                                <div class="p-4 text-center">
+                                    <h3 class="font-semibold text-lg text-gray-800 group-hover:text-[#52443a]">Jewelry</h3>
+                                </div>
+                            </div>
+                            <!-- Category Card 2 -->
+                            <div class="bg-white rounded-lg overflow-hidden shadow-md group transform transition-transform duration-300 hover:scale-105 hover:shadow-xl cursor-pointer" onclick="renderProducts('Pottery')">
+                                <img src="https://placehold.co/600x400/b8b8b8/ffffff?text=Pottery" alt="Pottery" class="w-full h-32 md:h-48 object-cover">
+                                <div class="p-4 text-center">
+                                    <h3 class="font-semibold text-lg text-gray-800 group-hover:text-[#52443a]">Pottery</h3>
+                                </div>
+                            </div>
+                            <!-- Category Card 3 -->
+                            <div class="bg-white rounded-lg overflow-hidden shadow-md group transform transition-transform duration-300 hover:scale-105 hover:shadow-xl cursor-pointer" onclick="renderProducts('Home Decor')">
+                                <img src="https://placehold.co/600x400/b8b8b8/ffffff?text=Home+Decor" alt="Home Decor" class="w-full h-32 md:h-48 object-cover">
+                                <div class="p-4 text-center">
+                                    <h3 class="font-semibold text-lg text-gray-800 group-hover:text-[#52443a]">Home Decor</h3>
+                                </div>
+                            </div>
+                            <!-- Category Card 4 -->
+                            <div class="bg-white rounded-lg overflow-hidden shadow-md group transform transition-transform duration-300 hover:scale-105 hover:shadow-xl cursor-pointer" onclick="renderProducts('Textiles')">
+                                <img src="https://placehold.co/600x400/b8b8b8/ffffff?text=Textiles" alt="Textiles" class="w-full h-32 md:h-48 object-cover">
+                                <div class="p-4 text-center">
+                                    <h3 class="font-semibold text-lg text-gray-800 group-hover:text-[#52443a]">Textiles</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Products Grid -->
+                    <section class="py-12">
+                        <div class="flex items-center justify-between mb-8">
+                            <h2 id="product-grid-title" class="text-3xl font-bold text-[#6b584d]">Trending Products</h2>
+                            <button id="back-to-all-products-btn" onclick="renderProducts()" class="hidden text-gray-600 hover:text-[#6b584d] transition-colors duration-200">
+                                &larr; Back to All Products
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8" id="product-grid">
+                            <!-- Product cards will be dynamically inserted here -->
+                        </div>
+                    </section>
+                </section>
+
+                <!-- Product Detail Page (Hidden by default) -->
+                <section id="product-detail-page" class="hidden py-12">
+                    <button onclick="showPage('homepage-content', true)" class="mb-6 text-gray-600 hover:text-[#6b584d] transition-colors duration-200 flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                        Back to Shopping
+                    </button>
+                    <div class="bg-white rounded-xl shadow-lg p-6 md:p-12 flex flex-col md:flex-row gap-8">
+                        <!-- Image Gallery -->
+                        <div class="md:w-1/2">
+                            <img id="product-main-image" src="" alt="Product Image" class="w-full h-auto rounded-lg shadow-md mb-4 object-cover">
+                            <div class="grid grid-cols-4 gap-2">
+                                <!-- Small image thumbnails will be dynamically added here -->
+                                <img id="thumb-1" src="" alt="Thumbnail 1" class="w-full h-20 object-cover rounded-md cursor-pointer hover:border-2 hover:border-[#6b584d] transition-all" onclick="changeImage(this)">
+                                <img id="thumb-2" src="" alt="Thumbnail 2" class="w-full h-20 object-cover rounded-md cursor-pointer hover:border-2 hover:border-[#6b584d] transition-all" onclick="changeImage(this)">
+                                <img id="thumb-3" src="" alt="Thumbnail 3" class="w-full h-20 object-cover rounded-md cursor-pointer hover:border-2 hover:border-[#6b584d] transition-all" onclick="changeImage(this)">
+                            </div>
+                        </div>
+                        <!-- Product Info -->
+                        <div class="md:w-1/2">
+                            <h1 id="product-title" class="text-3xl md:text-4xl font-bold text-[#6b584d] mb-2"></h1>
+                            <p class="text-gray-500 mb-4">by <a id="seller-link" href="#" class="text-blue-500 hover:underline"></a></p>
+                            <div class="flex items-center mb-4">
+                                <!-- Star Rating & Reviews -->
+                                <span class="text-yellow-400">★★★★★</span>
+                                <span class="text-gray-500 text-sm ml-2">(12 Reviews)</span>
+                            </div>
+                            <p id="product-price" class="text-2xl font-bold text-[#4a4a4a] mb-6"></p>
+                            
+                            <!-- Customization Options -->
+                            <div id="custom-options-container" class="space-y-4 mb-6 hidden">
+                                <h3 class="font-semibold text-lg text-[#6b584d]">Customization Options</h3>
+                                <div>
+                                    <label for="preset-option" class="block text-gray-700 text-sm font-medium mb-1">Select an Option</label>
+                                    <select id="preset-option" class="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:border-[#6b584d]"></select>
+                                </div>
+                                <div>
+                                    <label for="custom-instructions" class="block text-gray-700 text-sm font-medium mb-1">Special Instructions</label>
+                                    <textarea id="custom-instructions" rows="4" class="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:border-[#6b584d]" placeholder="Example: Use a lighter color wood or add a small engraving of a heart."></textarea>
+                                </div>
+                                <div>
+                                    <label for="file-upload" class="block text-gray-700 text-sm font-medium mb-1">Attach a File (Optional)</label>
+                                    <input type="file" id="file-upload" class="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:border-[#6b584d] bg-white">
+                                </div>
+                            </div>
+                            
+                            <!-- Description -->
+                            <div class="space-y-4 mb-6">
+                                <div>
+                                    <h3 class="font-semibold text-lg text-[#6b584d] mb-2">Description</h3>
+                                    <p id="product-description" class="text-gray-700"></p>
+                                </div>
+                            </div>
+                            <!-- Add to Cart -->
+                            <button id="add-to-cart-btn" class="w-full bg-[#6b584d] text-white py-4 px-8 rounded-full font-semibold text-lg hover:bg-[#52443a] transition-colors duration-200 transform hover:scale-105 shadow-md">Add to Cart</button>
+                            <div id="add-to-cart-message" class="hidden mt-4 p-4 rounded-md text-sm text-green-700 bg-green-100 border border-green-200"></div>
+                        </div>
+                    </div>
+
+                    <!-- Suggested Products Section -->
+                    <section class="py-12">
+                        <h2 class="text-3xl font-bold text-[#6b584d] mb-8 text-center">You might also like...</h2>
+                        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8" id="suggested-products-grid">
+                            <!-- Suggested product cards will be dynamically inserted here -->
+                        </div>
+                    </section>
+                </section>
+
+                <!-- Seller Page (Hidden by default) -->
+                <section id="seller-page" class="hidden py-12 text-center">
+                    <button onclick="showPage('homepage-content', true)" class="mb-6 text-gray-600 hover:text-[#6b584d] transition-colors duration-200 flex items-center mx-auto md:mx-0">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                        Back to Homepage
+                    </button>
+                    <div class="bg-white rounded-xl shadow-lg p-6 md:p-12 max-w-4xl mx-auto">
+                        <h2 class="text-3xl font-bold text-[#6b584d] mb-4">Sell Your Creations with Ease</h2>
+                        <p class="text-lg text-gray-700 mb-8">Join our community of artisans and connect with customers who love handmade goods. We provide everything you need to start and grow your business.</p>
+                        <div class="grid md:grid-cols-3 gap-8 mb-12 text-left">
+                            <div class="flex flex-col items-center text-center p-4">
+                                <div class="p-4 bg-[#e0d9cf] rounded-full inline-block mb-4">
+                                    <svg class="w-10 h-10 icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                </div>
+                                <h3 class="font-semibold text-lg text-[#6b584d] mb-2">Reach More Customers</h3>
+                                <p class="text-gray-600">Tap into a passionate community of buyers actively looking for unique, handcrafted products like yours.</p>
+                            </div>
+                            <div class="flex flex-col items-center text-center p-4">
+                                <div class="p-4 bg-[#e0d9cf] rounded-full inline-block mb-4">
+                                    <svg class="w-10 h-10 icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 4h.01M12 15h.01M12 12h.01M12 9h.01M12 21V3"></path></svg>
+                                </div>
+                                <h3 class="font-semibold text-lg text-[#6b584d] mb-2">Simple Store Management</h3>
+                                <p class="text-gray-600">Easily manage your products, track orders, and handle payments all from a single, intuitive dashboard.</p>
+                            </div>
+                            <div class="flex flex-col items-center text-center p-4">
+                                <div class="p-4 bg-[#e0d9cf] rounded-full inline-block mb-4">
+                                    <svg class="w-10 h-10 icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                                <h3 class="font-semibold text-lg text-[#6b584d] mb-2">Access Wholesale Materials</h3>
+                                <p class="text-gray-600">Save time and money by purchasing high-quality raw materials directly through our integrated wholesale section.</p>
+                            </div>
+                        </div>
+                        <div class="bg-[#f7f3e9] p-8 rounded-lg">
+                            <h3 class="text-2xl font-bold text-[#6b584d] mb-6">Ready to Get Started?</h3>
+                            <form id="seller-form" class="space-y-4">
+                                <div>
+                                    <label for="name" class="block text-gray-700 text-sm font-medium mb-1 text-left">Full Name</label>
+                                    <input type="text" id="name" name="name" required class="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:border-[#6b584d]">
+                                </div>
+                                <div>
+                                    <label for="email" class="block text-gray-700 text-sm font-medium mb-1 text-left">Email Address</label>
+                                    <input type="email" id="email" name="email" required class="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:border-[#6b584d]">
+                                </div>
+                                <div>
+                                    <label for="shop-name" class="block text-gray-700 text-sm font-medium mb-1 text-left">Your Shop Name</label>
+                                    <input type="text" id="shop-name" name="shop-name" required class="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:border-[#6b584d]">
+                                </div>
+                                <button type="submit" class="w-full bg-[#6b584d] text-white py-3 px-8 rounded-full font-semibold hover:bg-[#52443a] transition-colors duration-200 transform hover:scale-105 shadow-md">
+                                    Start Your Journey
+                                </button>
+                            </form>
+                            <div id="message-box" class="hidden mt-4 p-4 rounded-md text-sm text-green-700 bg-green-100 border border-green-200">
+                                Thank you for your interest! We'll review your application and be in touch soon.
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Profile Page (Hidden by default) -->
+                <section id="profile-page" class="hidden py-12">
+                    <button onclick="showPage('homepage-content', true)" class="mb-6 text-gray-600 hover:text-[#6b584d] transition-colors duration-200 flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                        Back to Homepage
+                    </button>
+                    <div class="bg-white rounded-xl shadow-lg p-6 md:p-12 max-w-4xl mx-auto">
+                        <div class="flex justify-center md:justify-start space-x-4 mb-8 border-b border-gray-200">
+                            <button onclick="showProfileSection('buyer')" id="buyer-tab" class="px-4 py-2 border-b-2 font-semibold text-lg border-[#6b584d] text-[#6b584d]">Buyer Profile</button>
+                            <button onclick="showProfileSection('seller')" id="seller-tab" class="px-4 py-2 border-b-2 border-transparent text-gray-500 hover:border-gray-300 transition-colors duration-200">Seller Profile</button>
+                        </div>
+                        
+                        <!-- Buyer Profile Section -->
+                        <div id="buyer-profile-section">
+                            <h2 class="text-2xl font-bold text-[#6b584d] mb-4">Welcome, Jane Doe</h2>
+                            <p class="text-gray-600 mb-8">Manage your account settings and view your order history.</p>
+
+                            <div class="bg-[#f7f3e9] p-6 rounded-lg mb-8">
+                                <h3 class="text-xl font-semibold text-[#6b584d] mb-4">Order History</h3>
+                                <div id="order-history-list" class="space-y-4">
+                                    <!-- Order items will be dynamically inserted here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Seller Profile Section (Hidden by default) -->
+                        <div id="seller-profile-section" class="hidden">
+                            <div class="flex flex-col md:flex-row items-center gap-6 mb-8">
+                                <img src="https://placehold.co/150x150/a2a2a2/ffffff?text=Artisan" alt="Seller Profile Picture" class="w-24 h-24 rounded-full object-cover shadow-md">
+                                <div>
+                                    <h2 class="text-2xl font-bold text-[#6b584d]">Wood & Grain Studio</h2>
+                                    <p class="text-gray-600">Selling beautifully handcrafted wooden bowls, cutting boards, and home decor.</p>
+                                </div>
+                            </div>
+
+                            <div class="bg-[#f7f3e9] p-6 rounded-lg mb-8">
+                                <h3 class="text-xl font-semibold text-[#6b584d] mb-4">My Products</h3>
+                                <div id="seller-products-list" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    <!-- Seller product items will be dynamically inserted here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-[#e0d9cf] p-8 mt-auto">
+            <div class="container mx-auto text-center text-gray-600">
+                <p>&copy; 2025 The Artisan's Market. All rights reserved.</p>
+                <div class="mt-4 space-x-4">
+                    <a href="#" class="text-gray-600 hover:text-[#6b584d] transition-colors duration-200">About Us</a>
+                    <a href="#" class="text-gray-600 hover:text-[#6b584d] transition-colors duration-200">Contact</a>
+                    <a href="#" class="text-gray-600 hover:text-[#6b584d] transition-colors duration-200">Help & FAQs</a>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Mock data for products
+        const products = [
+            // Home Decor
+            {
+                id: 1,
+                name: "Hand-Carved Wooden Bowl",
+                category: "Home Decor",
+                price: "$55.00",
+                seller: "Wood & Grain Studio",
+                sellerLink: "#",
+                description: "This unique wooden bowl is hand-carved from sustainable walnut wood, featuring a rich, dark grain and a smooth, polished finish. Perfect for serving or as a decorative centerpiece.",
+                images: [
+                    "https://placehold.co/600x600/b8b8b8/ffffff?text=Product+1+Main",
+                    "https://placehold.co/600x600/e0d9cf/6b584d?text=Product+1+Shot+2",
+                    "https://placehold.co/600x600/a2a2a2/ffffff?text=Product+1+Detail"
+                ],
+                customizable: true,
+                customOptions: ["Light Wood Finish", "Dark Wood Finish", "Personalized Engraving"]
+            },
+            {
+                id: 2,
+                name: "Embroidered Throw Pillow",
+                category: "Home Decor",
+                price: "$45.00",
+                seller: "Stitch & Thread",
+                sellerLink: "#",
+                description: "This soft, linen throw pillow features a delicate floral embroidery pattern. It's a perfect accent piece to add a touch of handcrafted charm to your living room or bedroom.",
+                images: [
+                    "https://placehold.co/600x600/b8b8b8/ffffff?text=Product+3+Main",
+                    "https://placehold.co/600x600/e0d9cf/6b584d?text=Product+3+Shot+2",
+                    "https://placehold.co/600x600/a2a2a2/ffffff?text=Product+3+Detail"
+                ],
+                customizable: false
+            },
+            {
+                id: 3,
+                name: "Ceramic Vase",
+                category: "Home Decor",
+                price: "$85.00",
+                seller: "Clay & Co.",
+                sellerLink: "#",
+                description: "A tall, elegant ceramic vase with a unique textured surface. Perfect for a single stem or a beautiful bouquet, it adds a touch of modern artistry to any room.",
+                images: [
+                    "https://placehold.co/600x600/f0f0f0/333333?text=Vase",
+                    "https://placehold.co/600x600/d8d8d8/4a4a4a?text=Vase+Side",
+                    "https://placehold.co/600x600/c2c2c2/555555?text=Vase+Detail"
+                ],
+                customizable: false
+            },
+            // Pottery
+            {
+                id: 4,
+                name: "Ceramic Coffee Mug",
+                category: "Pottery",
+                price: "$28.00",
+                seller: "Clay & Co.",
+                sellerLink: "#",
+                description: "A rustic, handmade ceramic mug with a beautiful speckled glaze. Each piece is slightly different, making it truly one-of-a-kind. Dishwasher and microwave safe.",
+                images: [
+                    "https://placehold.co/600x600/b8b8b8/ffffff?text=Product+2+Main",
+                    "https://placehold.co/600x600/e0d9cf/6b584d?text=Product+2+Shot+2",
+                    "https://placehold.co/600x600/a2a2a2/ffffff?text=Product+2+Detail"
+                ],
+                customizable: true,
+                customOptions: ["Ocean Blue Glaze", "Forest Green Glaze", "Matte White Glaze"]
+            },
+            {
+                id: 5,
+                name: "Hand-Painted Dinner Plate",
+                category: "Pottery",
+                price: "$40.00",
+                seller: "The Pottery Barn",
+                sellerLink: "#",
+                description: "A durable and stylish dinner plate with a subtle, hand-painted floral pattern. Made from high-fired stoneware, it's built to last and safe for daily use.",
+                images: [
+                    "https://placehold.co/600x600/f0f0f0/333333?text=Plate",
+                    "https://placehold.co/600x600/d8d8d8/4a4a4a?text=Plate+Detail",
+                    "https://placehold.co/600x600/c2c2c2/555555?text=Plate+Set"
+                ],
+                customizable: false
+            },
+            {
+                id: 6,
+                name: "Textured Serving Bowl",
+                category: "Pottery",
+                price: "$65.00",
+                seller: "Clay & Co.",
+                sellerLink: "#",
+                description: "A large serving bowl with a unique ridged texture on the exterior and a smooth, food-safe glaze on the interior. Perfect for salads, fruits, or as a decorative piece.",
+                images: [
+                    "https://placehold.co/600x600/b8b8b8/ffffff?text=Serving+Bowl",
+                    "https://placehold.co/600x600/e0d9cf/6b584d?text=Bowl+Texture",
+                    "https://placehold.co/600x600/a2a2a2/ffffff?text=Bowl+Detail"
+                ],
+                customizable: false
+            },
+            // Textiles
+            {
+                id: 7,
+                name: "Handwoven Jute Rug",
+                category: "Textiles",
+                price: "$150.00",
+                seller: "Woven Wonders",
+                sellerLink: "#",
+                description: "This eco-friendly rug is handwoven from natural jute fibers, offering a rustic texture and natural color that complements any room. Each rug is unique.",
+                images: [
+                    "https://placehold.co/600x600/f0f0f0/333333?text=Rug",
+                    "https://placehold.co/600x600/d8d8d8/4a4a4a?text=Rug+Texture",
+                    "https://placehold.co/600x600/c2c2c2/555555?text=Rug+Detail"
+                ],
+                customizable: false
+            },
+            {
+                id: 8,
+                name: "Silk Scarf",
+                category: "Textiles",
+                price: "$95.00",
+                seller: "The Silk Weaver",
+                sellerLink: "#",
+                description: "A soft, luxurious silk scarf with a hand-dyed pattern. Lightweight and elegant, it's a perfect accessory for any occasion.",
+                images: [
+                    "https://placehold.co/600x600/b8b8b8/ffffff?text=Scarf",
+                    "https://placehold.co/600x600/e0d9cf/6b584d?text=Scarf+Texture",
+                    "https://placehold.co/600x600/a2a2a2/ffffff?text=Scarf+Detail"
+                ],
+                customizable: false
+            },
+            {
+                id: 9,
+                name: "Patchwork Quilt",
+                category: "Textiles",
+                price: "$220.00",
+                seller: "Granny's Quilts",
+                sellerLink: "#",
+                description: "A cozy and colorful patchwork quilt made with a mix of cotton and flannel fabrics. Each square is hand-stitched with care, making it a true heirloom piece.",
+                images: [
+                    "https://placehold.co/600x600/f0f0f0/333333?text=Quilt",
+                    "https://placehold.co/600x600/d8d8d8/4a4a4a?text=Quilt+Pattern",
+                    "https://placehold.co/600x600/c2c2c2/555555?text=Quilt+Detail"
+                ],
+                customizable: true,
+                customOptions: ["Choose Your Colors", "Add a Name", "Custom Size"]
+            },
+            // Jewelry
+            {
+                id: 10,
+                name: "Sterling Silver Earrings",
+                category: "Jewelry",
+                price: "$65.00",
+                seller: "Gemstone Grace",
+                sellerLink: "#",
+                description: "Elegant, dangle earrings made from polished sterling silver and a small, natural aquamarine stone. Lightweight and perfect for everyday wear.",
+                images: [
+                    "https://placehold.co/600x600/b8b8b8/ffffff?text=Product+6+Main",
+                    "https://placehold.co/600x600/e0d9cf/6b584d?text=Product+6+Shot+2",
+                    "https://placehold.co/600x600/a2a2a2/ffffff?text=Product+6+Detail"
+                ],
+                customizable: false
+            },
+            {
+                id: 11,
+                name: "Handcrafted Silver Necklace",
+                category: "Jewelry",
+                price: "$85.00",
+                seller: "Silver & Stone Co.",
+                sellerLink: "#",
+                description: "A delicate silver chain with a small, hand-polished pendant. Minimalist and timeless, this necklace is designed to be cherished for years to come.",
+                images: [
+                    "https://placehold.co/600x600/f0f0f0/333333?text=Necklace",
+                    "https://placehold.co/600x600/d8d8d8/4a4a4a?text=Necklace+Detail",
+                    "https://placehold.co/600x600/c2c2c2/555555?text=Necklace+Close-up"
+                ],
+                customizable: true,
+                customOptions: ["Choose Chain Length", "Engrave Initials"]
+            },
+            {
+                id: 12,
+                name: "Gemstone Ring",
+                category: "Jewelry",
+                price: "$120.00",
+                seller: "Gemstone Grace",
+                sellerLink: "#",
+                description: "A beautiful sterling silver ring featuring a raw, uncut gemstone. Available in various stones, including amethyst and tourmaline.",
+                images: [
+                    "https://placehold.co/600x600/b8b8b8/ffffff?text=Ring",
+                    "https://placehold.co/600x600/e0d9cf/6b584d?text=Ring+Close-up",
+                    "https://placehold.co/600x600/a2a2a2/ffffff?text=Ring+Detail"
+                ],
+                customizable: true,
+                customOptions: ["Amethyst", "Tourmaline", "Garnet"]
+            },
+        ];
+        
+        // Mock data for profiles
+        const mockBuyerOrders = [
+            { orderId: "AM-2024-5231", date: "August 15, 2024", total: "$83.00", status: "Delivered", item: "Ceramic Coffee Mug" },
+            { orderId: "AM-2024-4902", date: "July 28, 2024", total: "$75.00", status: "Delivered", item: "Embroidered Throw Pillow" },
+            { orderId: "AM-2024-4115", date: "June 10, 2024", total: "$55.00", status: "Delivered", item: "Hand-Carved Wooden Bowl" },
+        ];
+
+        const mockSellerProducts = [
+             { name: "Hand-Carved Wooden Bowl", image: "https://placehold.co/300x300/b8b8b8/ffffff?text=Product+1" },
+             { name: "Rustic Serving Platter", image: "https://placehold.co/300x300/a2a2a2/ffffff?text=Product+New" },
+             { name: "Walnut Cutting Board", image: "https://placehold.co/300x300/e0d9cf/6b584d?text=Product+Newer" }
+        ];
+
+        // Function to render product cards on the homepage
+        function renderProducts(category = null) {
+            const productGrid = document.getElementById('product-grid');
+            const productGridTitle = document.getElementById('product-grid-title');
+            const backBtn = document.getElementById('back-to-all-products-btn');
+
+            let productsToRender = products;
+            let title = "Trending Products";
+            
+            if (category) {
+                productsToRender = products.filter(p => p.category === category);
+                title = category;
+                backBtn.classList.remove('hidden');
+            } else {
+                backBtn.classList.add('hidden');
+            }
+            
+            productGridTitle.textContent = title;
+            productGrid.innerHTML = '';
+
+            productsToRender.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'bg-white rounded-lg overflow-hidden shadow-md group transform transition-transform duration-300 hover:scale-105 hover:shadow-xl cursor-pointer';
+                productCard.innerHTML = `
+                    <img src="${product.images[0]}" alt="${product.name}" class="w-full h-48 object-cover">
+                    <div class="p-4">
+                        <h3 class="font-semibold text-lg text-gray-800">${product.name}</h3>
+                        <p class="text-sm text-gray-500 mb-2">by ${product.seller}</p>
+                        <p class="font-bold text-[#6b584d]">${product.price}</p>
+                    </div>
+                `;
+                // Add a click listener to show the product detail page
+                productCard.addEventListener('click', () => {
+                    showProductDetail(product);
+                });
+                productGrid.appendChild(productCard);
+            });
+        }
+
+        // Function to show a specific page (Homepage or Product Detail)
+        function showPage(pageId, isHome = false) {
+            const pages = ['homepage-content', 'product-detail-page', 'seller-page', 'profile-page'];
+            const heroSection = document.getElementById('hero-section');
+            
+            // Toggle hero section visibility
+            if (pageId === 'homepage-content' && isHome) {
+                heroSection.classList.remove('hidden');
+            } else {
+                heroSection.classList.add('hidden');
+            }
+
+            // Hide all content pages
+            pages.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.classList.add('hidden');
+                }
+            });
+            // Show the selected page
+            const currentPage = document.getElementById(pageId);
+            if (currentPage) {
+                currentPage.classList.remove('hidden');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Function to populate and show the product detail page
+        function showProductDetail(product) {
+            document.getElementById('product-main-image').src = product.images[0];
+            document.getElementById('product-main-image').alt = product.name;
+            document.getElementById('product-title').textContent = product.name;
+            document.getElementById('seller-link').textContent = product.seller;
+            document.getElementById('seller-link').href = product.sellerLink;
+            document.getElementById('product-price').textContent = product.price;
+            document.getElementById('product-description').textContent = product.description;
+
+            // Update thumbnails
+            document.getElementById('thumb-1').src = product.images[0];
+            document.getElementById('thumb-2').src = product.images[1];
+            document.getElementById('thumb-3').src = product.images[2];
+
+            // Handle customization options section
+            const customOptionsContainer = document.getElementById('custom-options-container');
+            const presetSelect = document.getElementById('preset-option');
+            if (product.customizable) {
+                customOptionsContainer.classList.remove('hidden');
+                // Clear and populate presets
+                presetSelect.innerHTML = '';
+                product.customOptions.forEach(option => {
+                    const optionElement = document.createElement('option');
+                    optionElement.value = option;
+                    optionElement.textContent = option;
+                    presetSelect.appendChild(optionElement);
+                });
+            } else {
+                customOptionsContainer.classList.add('hidden');
+            }
+
+            // Clear previous form data and messages
+            document.getElementById('custom-instructions').value = '';
+            document.getElementById('file-upload').value = null;
+            document.getElementById('add-to-cart-message').classList.add('hidden');
+
+            // Attach event listener to the Add to Cart button
+            const addToCartBtn = document.getElementById('add-to-cart-btn');
+            addToCartBtn.onclick = () => {
+                handleAddToCart(product);
+            };
+
+            // Render suggested products
+            renderSuggestedProducts(product);
+
+            showPage('product-detail-page');
+        }
+
+        // Function to render a list of suggested products
+        function renderSuggestedProducts(currentProduct) {
+            const suggestedProductsGrid = document.getElementById('suggested-products-grid');
+            suggestedProductsGrid.innerHTML = '';
+
+            // Filter out the current product and shuffle the remaining
+            const otherProducts = products.filter(p => p.id !== currentProduct.id).sort(() => 0.5 - Math.random());
+            
+            // Take up to 4 suggested products
+            const suggestions = otherProducts.slice(0, 4);
+
+            suggestions.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'bg-white rounded-lg overflow-hidden shadow-md group transform transition-transform duration-300 hover:scale-105 hover:shadow-xl cursor-pointer';
+                productCard.innerHTML = `
+                    <img src="${product.images[0]}" alt="${product.name}" class="w-full h-48 object-cover">
+                    <div class="p-4">
+                        <h3 class="font-semibold text-lg text-gray-800">${product.name}</h3>
+                        <p class="text-sm text-gray-500 mb-2">by ${product.seller}</p>
+                        <p class="font-bold text-[#6b584d]">${product.price}</p>
+                    </div>
+                `;
+                // Add a click listener to show the product detail page for the suggested product
+                productCard.addEventListener('click', () => {
+                    showProductDetail(product);
+                });
+                suggestedProductsGrid.appendChild(productCard);
+            });
+        }
+
+
+        // Function to change the main image on the product detail page
+        function changeImage(thumbnail) {
+            document.getElementById('product-main-image').src = thumbnail.src;
+        }
+
+        // Handle Add to Cart logic with custom options
+        function handleAddToCart(product) {
+            const messageBox = document.getElementById('add-to-cart-message');
+            let message = `Added ${product.name} to your cart.`;
+            
+            if (product.customizable) {
+                const selectedOption = document.getElementById('preset-option').value;
+                const instructions = document.getElementById('custom-instructions').value;
+                const fileInput = document.getElementById('file-upload');
+                const attachedFile = fileInput.files[0];
+
+                message += " Your customization details: ";
+                if (selectedOption) {
+                    message += `Option: ${selectedOption}. `;
+                }
+                if (instructions) {
+                    message += `Instructions: "${instructions}". `;
+                }
+                if (attachedFile) {
+                    message += `File attached: ${attachedFile.name}.`;
+                }
+            }
+            
+            messageBox.textContent = message;
+            messageBox.classList.remove('hidden');
+        }
+
+        // Mobile menu toggle
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Handle seller form submission
+        const sellerForm = document.getElementById('seller-form');
+        const messageBox = document.getElementById('message-box');
+        sellerForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            messageBox.classList.remove('hidden');
+            sellerForm.reset();
+        });
+
+        // Function to render buyer orders
+        function renderBuyerOrders() {
+            const list = document.getElementById('order-history-list');
+            list.innerHTML = '';
+            mockBuyerOrders.forEach(order => {
+                const orderItem = document.createElement('div');
+                orderItem.className = 'bg-white p-4 rounded-lg shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center';
+                orderItem.innerHTML = `
+                    <div>
+                        <p class="font-semibold text-gray-800">Order #${order.orderId}</p>
+                        <p class="text-sm text-gray-500">Item: ${order.item}</p>
+                        <p class="text-sm text-gray-500">Date: ${order.date}</p>
+                    </div>
+                    <div class="mt-2 sm:mt-0 text-right">
+                        <p class="font-bold text-[#6b584d]">${order.total}</p>
+                        <span class="text-xs text-green-500">${order.status}</span>
+                    </div>
+                `;
+                list.appendChild(orderItem);
+            });
+        }
+        
+        // Function to render seller products
+        function renderSellerProducts() {
+            const list = document.getElementById('seller-products-list');
+            list.innerHTML = '';
+            mockSellerProducts.forEach(product => {
+                const productItem = document.createElement('div');
+                productItem.className = 'bg-white rounded-lg overflow-hidden shadow-md';
+                productItem.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="w-full h-32 object-cover">
+                    <div class="p-2 text-center">
+                        <p class="font-semibold text-sm text-gray-800">${product.name}</p>
+                    </div>
+                `;
+                list.appendChild(productItem);
+            });
+        }
+        
+        // Function to switch between buyer and seller profile sections
+        function showProfileSection(section) {
+            const buyerSection = document.getElementById('buyer-profile-section');
+            const sellerSection = document.getElementById('seller-profile-section');
+            const buyerTab = document.getElementById('buyer-tab');
+            const sellerTab = document.getElementById('seller-tab');
+            
+            if (section === 'buyer') {
+                buyerSection.classList.remove('hidden');
+                sellerSection.classList.add('hidden');
+                buyerTab.classList.add('border-[#6b584d]', 'text-[#6b584d]');
+                buyerTab.classList.remove('border-transparent', 'text-gray-500');
+                sellerTab.classList.add('border-transparent', 'text-gray-500');
+                sellerTab.classList.remove('border-[#6b584d]', 'text-[#6b584d]');
+                renderBuyerOrders();
+            } else if (section === 'seller') {
+                buyerSection.classList.add('hidden');
+                sellerSection.classList.remove('hidden');
+                sellerTab.classList.add('border-[#6b584d]', 'text-[#6b584d]');
+                sellerTab.classList.remove('border-transparent', 'text-gray-500');
+                buyerTab.classList.add('border-transparent', 'text-gray-500');
+                buyerTab.classList.remove('border-[#6b584d]', 'text-[#6b584d]');
+                renderSellerProducts();
+            }
+        }
+        
+        // Initial render on page load
+        window.onload = () => {
+            renderProducts();
+            renderBuyerOrders();
+        };
+
+    </script>
+</body>
+</html>
