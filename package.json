@@ -1,0 +1,32 @@
+{
+  "name": "artisans-market",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@9.1.0",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "dev:web": "turbo run dev --filter=web",
+    "dev:admin": "turbo run dev --filter=admin",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "db:generate": "pnpm --filter @artisans-market/db generate",
+    "db:migrate": "pnpm --filter @artisans-market/db migrate",
+    "db:studio": "pnpm --filter @artisans-market/db studio",
+    "db:seed": "pnpm --filter @artisans-market/db seed",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "turbo": "^2.1.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}
