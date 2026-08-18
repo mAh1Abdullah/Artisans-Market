@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Artisan's Market — Admin Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root {
+    --forest:      #2E2A25;   /* Charcoal Espresso */
+    --forest-dark: #201C17;
+    --forest-mid:  #4A4038;
+    --gold:        #C85A32;   /* Terracotta Clay — primary action */
+    --gold-light:  #DE7D57;
+    --sage:        #5F7464;   /* Eucalyptus Sage — approved / trust */
+    --sage-dark:   #46584B;
+    --danger:      #A8402A;   /* muted brick red — reject / suspend / ban */
+    --danger-bg:   #F6E5E0;
+    --warn:        #B98423;   /* amber — pending */
+    --warn-bg:     #F5EBD6;
+    --parchment:   #F4EBE1;
+    --paper:       #FAF9F6;
+    --ink:         #2E2A25;
+    --ink-mid:     #5C5347;
+    --ink-light:   #93897B;
+    --rule:        #E6DCCB;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Outfit', sans-serif; background: var(--paper); color: var(--ink); line-height: 1.5; }
+  h1, h2, h3, .serif { font-family: 'Cormorant Garamond', serif; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+    outline: 2px solid var(--gold); outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+
+  /* ── SHELL ──────────────────────────────────────── */
+  #shell { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ────────────────────────────────────── */
+  #sidebar {
+    width: 236px; flex-shrink: 0; background: var(--forest-dark); color: #fff;
+    display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh;
+  }
+  .sb-brand { padding: 22px 22px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .sb-brand .mark { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 700; color: #fff; }
+  .sb-brand .sub { font-size: 0.62rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold-light); margin-top: 2px; }
+  .sb-nav { flex: 1; padding: 14px 10px; display: flex; flex-direction: column; gap: 2px; }
+  .sb-link {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 10px 12px; font-size: 0.8rem; font-weight: 500; color: #A8B5A9;
+    cursor: pointer; border-left: 2px solid transparent; transition: background 0.15s, color 0.15s;
+  }
+  .sb-link .lbl { display: flex; align-items: center; gap: 10px; }
+  .sb-link:hover { background: rgba(255,255,255,0.04); color: #fff; }
+  .sb-link.active { color: #fff; background: rgba(200,90,50,0.14); border-left-color: var(--gold); font-weight: 600; }
+  .sb-count { font-size: 0.62rem; font-weight: 700; background: var(--gold); color: #fff; padding: 1px 7px; }
+  .sb-count.zero { background: rgba(255,255,255,0.1); color: #A8B5A9; }
+  .sb-foot { padding: 16px 22px 20px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 0.7rem; color: #7C8C81; }
+  .sb-foot a { color: var(--gold-light); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; }
+
+  /* ── MAIN ───────────────────────────────────────── */
+  #main { flex: 1; min-width: 0; }
+  #topbar {
+    height: 62px; border-bottom: 1.5px solid var(--rule); background: var(--paper);
+    display: flex; align-items: center; justify-content: space-between; padding: 0 28px;
+    position: sticky; top: 0; z-index: 20;
+  }
+  #topbar h1 { font-size: 1.25rem; font-weight: 700; color: var(--ink); }
+  .admin-id { display: flex; align-items: center; gap: 10px; }
+  .admin-avatar {
+    width: 30px; height: 30px; background: var(--sage); color: #fff; display: flex;
+    align-items: center; justify-content: center; font-family: 'Cormorant Garamond', serif; font-weight: 700; font-size: 0.9rem;
+  }
+  main.content { padding: 26px 28px 60px; }
+  .page { display: none; }
+  .page.active { display: block; animation: fadeIn 0.15s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ── STAT CARDS ─────────────────────────────────── */
+  .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 30px; }
+  .stat-card { background: #fff; border: 1.5px solid var(--rule); border-left: 3px solid var(--gold); padding: 18px 20px; }
+  .stat-card .val { font-family: 'Cormorant Garamond', serif; font-size: 1.7rem; font-weight: 700; color: var(--ink); }
+  .stat-card .lbl { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-light); margin-top: 3px; }
+
+  /* ── TABLE ──────────────────────────────────────── */
+  .tbl-wrap { background: #fff; border: 1.5px solid var(--rule); overflow: hidden; }
+  table.admin-tbl { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  table.admin-tbl thead th {
+    text-align: left; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-light); background: var(--parchment); padding: 10px 16px; border-bottom: 1.5px solid var(--rule);
+  }
+  table.admin-tbl tbody tr { border-bottom: 1px solid var(--rule); cursor: pointer; transition: background 0.12s; }
+  table.admin-tbl tbody tr:last-child { border-bottom: none; }
+  table.admin-tbl tbody tr:hover { background: var(--parchment); }
+  table.admin-tbl tbody tr.no-hover { cursor: default; }
+  table.admin-tbl tbody tr.no-hover:hover { background: transparent; }
+  table.admin-tbl td { padding: 12px 16px; vertical-align: middle; color: var(--ink); }
+  table.admin-tbl td.dim { color: var(--ink-light); font-size: 0.78rem; }
+  .row-stripe { border-left: 3px solid transparent; }
+  .row-stripe.pending { border-left-color: var(--warn); }
+  .row-stripe.approved { border-left-color: var(--sage); }
+  .row-stripe.flagged { border-left-color: var(--danger); }
+
+  /* ── BADGES & PILLS ─────────────────────────────── */
+  .pill { display: inline-flex; align-items: center; gap: 5px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 9px; }
+  .pill-warn { background: var(--warn-bg); color: var(--warn); }
+  .pill-sage { background: #E4EAE4; color: var(--sage-dark); }
+  .pill-danger { background: var(--danger-bg); color: var(--danger); }
+  .pill-gray { background: var(--parchment); color: var(--ink-mid); }
+  .pill::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; display: inline-block; }
+
+  /* ── BUTTONS ────────────────────────────────────── */
+  .btn { font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 9px 18px; cursor: pointer; border: 1.5px solid transparent; display: inline-flex; align-items: center; gap: 6px; transition: 0.15s; }
+  .btn-approve { background: var(--sage); color: #fff; }
+  .btn-approve:hover { background: var(--sage-dark); }
+  .btn-reject { background: #fff; color: var(--danger); border-color: var(--danger); }
+  .btn-reject:hover { background: var(--danger-bg); }
+  .btn-primary { background: var(--gold); color: #fff; }
+  .btn-primary:hover { background: var(--gold-light); }
+  .btn-ghost { background: transparent; color: var(--ink-mid); border-color: var(--rule); }
+  .btn-ghost:hover { background: var(--parchment); }
+  .btn-sm { padding: 6px 12px; font-size: 0.68rem; }
+
+  /* ── FILTER BAR ─────────────────────────────────── */
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; }
+  .fpill { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; padding: 6px 14px;
+    border: 1.5px solid var(--rule); background: #fff; color: var(--ink-mid); cursor: pointer; }
+  .fpill.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .search-box { flex: 1; min-width: 200px; max-width: 320px; position: relative; }
+  .search-box input { width: 100%; padding: 8px 12px 8px 32px; border: 1.5px solid var(--rule); font-size: 0.8rem; background: #fff; }
+  .search-box svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--ink-light); }
+
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; }
+  .section-head h2 { font-size: 1.4rem; font-weight: 700; color: var(--ink); }
+  .section-sub { font-size: 0.78rem; color: var(--ink-light); margin-top: 2px; }
+
+  /* ── DRAWER ─────────────────────────────────────── */
+  #drawer-overlay {
+    position: fixed; inset: 0; background: rgba(32,28,23,0.4); z-index: 100;
+    display: none; opacity: 0; transition: opacity 0.2s;
+  }
+  #drawer-overlay.show { display: block; opacity: 1; }
+  #drawer {
+    position: fixed; top: 0; right: -480px; width: 460px; max-width: 92vw; height: 100vh;
+    background: #fff; z-index: 101; box-shadow: -8px 0 32px rgba(0,0,0,0.14);
+    transition: right 0.25s ease; display: flex; flex-direction: column;
+  }
+  #drawer.show { right: 0; }
+  .drawer-head { padding: 22px 24px; border-bottom: 1.5px solid var(--rule); display: flex; justify-content: space-between; align-items: flex-start; }
+  .drawer-body { padding: 22px 24px; overflow-y: auto; flex: 1; }
+  .drawer-close { background: none; border: none; cursor: pointer; color: var(--ink-light); padding: 4px; }
+  .drawer-label { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-light); margin-bottom: 4px; }
+  .drawer-field { margin-bottom: 18px; }
+  .drawer-field .v { font-size: 0.88rem; color: var(--ink); }
+
+  /* ── REASON MODAL ───────────────────────────────── */
+  #reason-overlay {
+    position: fixed; inset: 0; background: rgba(32,28,23,0.5); z-index: 200;
+    display: none; align-items: center; justify-content: center;
+  }
+  #reason-overlay.show { display: flex; }
+  #reason-modal { background: #fff; width: 420px; max-width: 92vw; padding: 26px; border-top: 3px solid var(--danger); }
+  #reason-modal.approve-tone { border-top-color: var(--sage); }
+  #reason-modal h3 { font-size: 1.2rem; margin-bottom: 6px; }
+  #reason-modal p.hint { font-size: 0.78rem; color: var(--ink-mid); margin-bottom: 14px; }
+  #reason-modal textarea { width: 100%; border: 1.5px solid var(--rule); padding: 10px 12px; font-size: 0.84rem; font-family: 'Outfit', sans-serif; min-height: 84px; resize: vertical; }
+  #reason-modal .actions { display: flex; gap: 8px; margin-top: 16px; justify-content: flex-end; }
+
+  /* ── FORM ───────────────────────────────────────── */
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-mid); margin-bottom: 6px; }
+  .form-control { width: 100%; background: #fff; border: 1.5px solid var(--rule); padding: 9px 12px; font-family: 'Outfit', sans-serif; font-size: 0.84rem; color: var(--ink); }
+  .form-control:focus { border-color: var(--gold); outline: none; }
+
+  /* ── TRUST BAR ──────────────────────────────────── */
+  .trust-bar-track { width: 100%; height: 8px; background: var(--rule); position: relative; }
+  .trust-bar-fill { height: 100%; background: var(--sage); }
+  .trust-bar-fill.low { background: var(--danger); }
+  .trust-bar-fill.mid { background: var(--warn); }
+
+  /* ── TOAST ──────────────────────────────────────── */
+  #toast {
+    position: fixed; bottom: 26px; right: 26px; background: var(--forest-dark); color: #fff;
+    padding: 13px 18px; font-size: 0.82rem; z-index: 999; display: flex; align-items: center; gap: 10px;
+    max-width: 340px; transform: translateY(16px); opacity: 0; transition: 0.25s; pointer-events: none;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.2);
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+
+  @media (max-width: 900px) {
+    #sidebar { display: none; }
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div id="shell">
+  <!-- ══ SIDEBAR ══════════════════════════════════ -->
+  <aside id="sidebar">
+    <div class="sb-brand">
+      <div class="mark">The Artisan's Market</div>
+      <div class="sub">Admin Console</div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-link active" data-page="overview" onclick="showAdminPage('overview', this)">
+        <span class="lbl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Overview</span>
+      </div>
+      <div class="sb-link" data-page="vendors" onclick="showAdminPage('vendors', this)">
+        <span class="lbl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1-5h16l1 5"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M5 9v10h14V9"/></svg>Vendor Queue</span>
+        <span class="sb-count" id="sb-count-vendors">0</span>
+      </div>
+      <div class="sb-link" data-page="products" onclick="showAdminPage('products', this)">
+        <span class="lbl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>Product Moderation</span>
+        <span class="sb-count" id="sb-count-products">0</span>
+      </div>
+      <div class="sb-link" data-page="users" onclick="showAdminPage('users', this)">
+        <span class="lbl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Users &amp; Trust</span>
+      </div>
+      <div class="sb-link" data-page="settlements" onclick="showAdminPage('settlements', this)">
+        <span class="lbl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="1"/><line x1="2" y1="10" x2="22" y2="10"/></svg>Settlements</span>
+      </div>
+      <div class="sb-link" data-page="coupons" onclick="showAdminPage('coupons', this)">
+        <span class="lbl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41 13.42 20.6a2 2 0 0 1-2.83 0L2.83 12.83a2 2 0 0 1 0-2.83L10 2.83a2 2 0 0 1 2.83 0l7.76 7.76a2 2 0 0 1 0 2.82Z"/><circle cx="8.5" cy="8.5" r="1"/></svg>Coupons</span>
+      </div>
+      <div class="sb-link" data-page="audit" onclick="showAdminPage('audit', this)">
+        <span class="lbl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>Audit Log</span>
+      </div>
+    </nav>
+    <div class="sb-foot">Signed in as <strong style="color:#fff;">A. Rahman</strong> · <a onclick="showToast('This mockup only covers the admin console — sign-out is not wired.')">Sign out</a></div>
+  </aside>
+
+  <!-- ══ MAIN ═════════════════════════════════════ -->
+  <div id="main">
+    <div id="topbar">
+      <h1 id="topbar-title" class="serif">Overview</h1>
+      <div class="admin-id">
+        <span style="font-size:0.75rem;color:var(--ink-light);">admin · platform role</span>
+        <div class="admin-avatar">A</div>
+      </div>
+    </div>
+
+    <main class="content">
+
+      <!-- ══ OVERVIEW ══════════════════════════════ -->
+      <div id="page-overview" class="page active">
+        <div class="stat-grid">
+          <div class="stat-card"><div class="val" id="ov-pending-vendors">0</div><div class="lbl">Vendors Awaiting Review</div></div>
+          <div class="stat-card"><div class="val" id="ov-pending-products">0</div><div class="lbl">Products Pending Review</div></div>
+          <div class="stat-card"><div class="val" id="ov-open-settlements">0</div><div class="lbl">Open Settlements</div></div>
+          <div class="stat-card"><div class="val" id="ov-flagged-users">0</div><div class="lbl">Users Flagged for Review</div></div>
+        </div>
+
+        <div class="section-head"><h2>Needs Attention</h2></div>
+        <div class="tbl-wrap" style="margin-bottom:32px;">
+          <table class="admin-tbl">
+            <thead><tr><th>Type</th><th>Item</th><th>Submitted</th><th>Status</th><th></th></tr></thead>
+            <tbody id="ov-attention-list"></tbody>
+          </table>
+        </div>
+
+        <div class="section-head"><h2>Recent Audit Activity</h2><span class="section-link" style="font-size:0.78rem;color:var(--sage);cursor:pointer;" onclick="showAdminPage('audit', document.querySelector('[data-page=audit]'))">View full log →</span></div>
+        <div class="tbl-wrap">
+          <table class="admin-tbl">
+            <thead><tr><th>Actor</th><th>Action</th><th>Entity</th><th>Date</th></tr></thead>
+            <tbody id="ov-audit-preview"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ VENDOR QUEUE ══════════════════════════ -->
+      <div id="page-vendors" class="page">
+        <div class="section-head">
+          <div><h2>Vendor Applications</h2><p class="section-sub">Approve, reject, or suspend artisan shop applications. Unapproved vendors never appear in public commerce flows.</p></div>
+        </div>
+        <div class="filter-row" id="vendor-filter-row"></div>
+        <div class="tbl-wrap">
+          <table class="admin-tbl">
+            <thead><tr><th>Shop</th><th>Owner</th><th>Category</th><th>Submitted</th><th>Status</th><th></th></tr></thead>
+            <tbody id="vendor-tbl-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ PRODUCT MODERATION ════════════════════ -->
+      <div id="page-products" class="page">
+        <div class="section-head">
+          <div><h2>Product Moderation</h2><p class="section-sub">Review listings before they go live. Approving sets the product's current published version.</p></div>
+        </div>
+        <div class="tbl-wrap">
+          <table class="admin-tbl">
+            <thead><tr><th></th><th>Product</th><th>Seller</th><th>Category</th><th>Price</th><th>Submitted</th><th></th></tr></thead>
+            <tbody id="product-tbl-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ USERS & TRUST ═════════════════════════ -->
+      <div id="page-users" class="page">
+        <div class="section-head">
+          <div><h2>Users &amp; Trust</h2><p class="section-sub">Manage platform roles, trust scores, and Cash-on-Delivery eligibility.</p></div>
+        </div>
+        <div class="filter-row">
+          <div class="search-box">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" id="user-search" placeholder="Search by name or email…" oninput="renderUsers()">
+          </div>
+          <button class="fpill active" data-role="" onclick="setUserRoleFilter('', this)">All Roles</button>
+          <button class="fpill" data-role="user" onclick="setUserRoleFilter('user', this)">Buyer</button>
+          <button class="fpill" data-role="vendor_user" onclick="setUserRoleFilter('vendor_user', this)">Vendor</button>
+          <button class="fpill" data-role="admin" onclick="setUserRoleFilter('admin', this)">Admin</button>
+        </div>
+        <div class="tbl-wrap">
+          <table class="admin-tbl">
+            <thead><tr><th>User</th><th>Role</th><th>Trust Score</th><th>COD</th><th>Joined</th><th></th></tr></thead>
+            <tbody id="user-tbl-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ SETTLEMENTS ═══════════════════════════ -->
+      <div id="page-settlements" class="page">
+        <div class="section-head">
+          <div><h2>Settlements</h2><p class="section-sub">Bi-weekly payout batches, per vendor. Approve before payout is executed.</p></div>
+          <button class="btn btn-primary" onclick="generateSettlementBatch()">Generate New Batch</button>
+        </div>
+        <div class="tbl-wrap">
+          <table class="admin-tbl">
+            <thead><tr><th>Batch</th><th>Vendor</th><th>Gross</th><th>Commission (10%)</th><th>Refunds</th><th>Net Payout</th><th>Status</th><th></th></tr></thead>
+            <tbody id="settlement-tbl-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ COUPONS ═══════════════════════════════ -->
+      <div id="page-coupons" class="page">
+        <div class="section-head">
+          <div><h2>Coupons &amp; Promotions</h2><p class="section-sub">Platform-wide or vendor-specific discount codes, backed by a rules engine.</p></div>
+          <button class="btn btn-primary" onclick="openCouponEditor(null)">+ New Coupon</button>
+        </div>
+        <div class="tbl-wrap">
+          <table class="admin-tbl">
+            <thead><tr><th>Code</th><th>Type</th><th>Discount</th><th>Conditions</th><th>Usage</th><th>Valid Until</th><th>Status</th><th></th></tr></thead>
+            <tbody id="coupon-tbl-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ══ AUDIT LOG ═════════════════════════════ -->
+      <div id="page-audit" class="page">
+        <div class="section-head">
+          <div><h2>Audit Log</h2><p class="section-sub">Append-only record of every sensitive admin action. Cannot be edited or deleted.</p></div>
+        </div>
+        <div class="filter-row">
+          <div class="search-box">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" id="audit-search" placeholder="Search actor, action, or entity…" oninput="renderAuditLog()">
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table class="admin-tbl">
+            <thead><tr><th>Actor</th><th>Action</th><th>Entity</th><th>Reason</th><th>Date</th></tr></thead>
+            <tbody id="audit-tbl-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ══ DRAWER (record detail) ══════════════════════ -->
+<div id="drawer-overlay" onclick="closeDrawer()"></div>
+<aside id="drawer">
+  <div class="drawer-head">
+    <div>
+      <p class="drawer-label" id="drawer-eyebrow">Detail</p>
+      <h2 class="serif" style="font-size:1.4rem;" id="drawer-title"></h2>
+    </div>
+    <button class="drawer-close" onclick="closeDrawer()" aria-label="Close">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</aside>
+
+<!-- ══ REASON MODAL ═════════════════════════════════ -->
+<div id="reason-overlay">
+  <div id="reason-modal">
+    <h3 class="serif" id="reason-title">Confirm Action</h3>
+    <p class="hint" id="reason-hint">Please provide a reason. This is logged to the audit trail.</p>
+    <textarea id="reason-text" placeholder="Reason (required)…"></textarea>
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="closeReasonModal()">Cancel</button>
+      <button class="btn btn-reject" id="reason-confirm-btn" onclick="confirmReasonModal()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ════════════════════════════════════════ -->
+<div id="toast"><span id="toast-msg"></span></div>
+
+<script>
+// ══════════════════════════════════════════════════
+// MOCK DATA
+// ══════════════════════════════════════════════════
+let vendors = [
+  { id:'v1', shop:'Terra & Twine',      owner:'Nusrat Jahan',   category:'Textiles',  status:'submitted',    submitted:'29 Jul 2024', docs:['trade_license.pdf','national_id.jpg'],
+    history:[{status:'draft', date:'26 Jul 2024', note:'Application started'}, {status:'submitted', date:'29 Jul 2024', note:'Submitted for review'}] },
+  { id:'v2', shop:'Kiln & Kettle',      owner:'Farhan Ahmed',   category:'Pottery',   status:'under_review', submitted:'27 Jul 2024', docs:['trade_license.pdf'],
+    history:[{status:'draft', date:'24 Jul 2024', note:'Application started'}, {status:'submitted', date:'27 Jul 2024', note:'Submitted for review'}, {status:'under_review', date:'28 Jul 2024', note:'Assigned to reviewer'}] },
+  { id:'v3', shop:'Brass & Bloom',      owner:'Ishrat Karim',   category:'Jewelry',   status:'submitted',    submitted:'30 Jul 2024', docs:[],
+    history:[{status:'draft', date:'29 Jul 2024', note:'Application started'}, {status:'submitted', date:'30 Jul 2024', note:'Submitted for review'}] },
+  { id:'v4', shop:'Wood & Grain Studio',owner:'Tanvir Hossain',owner_email:'tanvir@example.com', category:'Home Decor',status:'approved', submitted:'02 Jun 2024', docs:['trade_license.pdf','national_id.jpg'],
+    history:[{status:'submitted', date:'02 Jun 2024', note:'Submitted for review'}, {status:'approved', date:'05 Jun 2024', note:'Approved — meets all criteria'}] },
+  { id:'v5', shop:'Riverside Looms',    owner:'Shirin Akter',   category:'Textiles',  status:'suspended', submitted:'14 May 2024', docs:['trade_license.pdf'],
+    history:[{status:'submitted', date:'14 May 2024', note:'Submitted for review'}, {status:'approved', date:'18 May 2024', note:'Approved'}, {status:'suspended', date:'22 Jul 2024', note:'Repeated late shipments — under investigation'}] },
+];
+
+let productQueue = [
+  { id:'p1', name:'Hand-Dyed Cotton Wrap',   seller:'Terra & Twine', category:'Textiles', price:'$62.00', submitted:'30 Jul 2024', img:'https://placehold.co/120x120/5F7464/fff?text=Wrap' },
+  { id:'p2', name:'Speckled Stoneware Vase', seller:'Kiln & Kettle', category:'Pottery',  price:'$58.00', submitted:'29 Jul 2024', img:'https://placehold.co/120x120/C85A32/fff?text=Vase' },
+  { id:'p3', name:'Hammered Brass Cuff',     seller:'Brass & Bloom', category:'Jewelry',  price:'$44.00', submitted:'30 Jul 2024', img:'https://placehold.co/120x120/2E2A25/fff?text=Cuff' },
+  { id:'p4', name:'Chunky Knit Table Runner',seller:'Terra & Twine', category:'Textiles', price:'$38.00', submitted:'28 Jul 2024', img:'https://placehold.co/120x120/93897B/fff?text=Runner' },
+];
+
+let users = [
+  { id:'u1', name:'Jane Doe',       email:'jane@example.com',      role:'user',        trust:78, cod:true,  risk:'low',    joined:'12 Mar 2023', banned:false },
+  { id:'u2', name:'Tanvir Hossain', email:'tanvir@example.com',    role:'vendor_user', trust:88, cod:true,  risk:'low',    joined:'28 May 2022', banned:false },
+  { id:'u3', name:'Rakib Hasan',    email:'rakib.h@example.com',   role:'user',        trust:41, cod:false, risk:'high',   joined:'03 Jul 2024', banned:false },
+  { id:'u4', name:'Shirin Akter',   email:'shirin@example.com',    role:'vendor_user', trust:35, cod:false, risk:'high',   joined:'10 May 2024', banned:false },
+  { id:'u5', name:'A. Rahman',      email:'admin@theartisansmarket.com', role:'admin', trust:100,cod:true,  risk:'low',    joined:'01 Jan 2022', banned:false },
+  { id:'u6', name:'Mahmud Kabir',   email:'mahmud.k@example.com',  role:'user',        trust:22, cod:false, risk:'high',   joined:'18 Jul 2024', banned:true },
+  { id:'u7', name:'Priya Sen',      email:'priya.sen@example.com', role:'user',        trust:66, cod:true,  risk:'medium', joined:'09 Feb 2024', banned:false },
+];
+
+let settlements = [
+  { id:'ST-2024-14', vendor:'Wood & Grain Studio', gross:2400, commission:240, refunds:60,  status:'pending_review' },
+  { id:'ST-2024-14', vendor:'Clay & Co.',           gross:1850, commission:185, refunds:0,   status:'pending_review' },
+  { id:'ST-2024-13', vendor:'Wood & Grain Studio', gross:2100, commission:210, refunds:40,  status:'approved' },
+  { id:'ST-2024-13', vendor:'Gemstone Grace',       gross:3200, commission:320, refunds:0,   status:'paid' },
+  { id:'ST-2024-12', vendor:'Woven Wonders',        gross:1400, commission:140, refunds:120, status:'paid' },
+];
+
+let coupons = [
+  { code:'WELCOME15', type:'platform', discountType:'percentage', value:15, minOrder:5000, maxCap:2000, firstOrderOnly:true, usageLimit:1, usageCount:412, validUntil:'31 Dec 2024', status:'active' },
+  { code:'CLAYCO500', type:'vendor', vendor:'Clay & Co.', discountType:'fixed', value:500, minOrder:3000, usageLimit:null, usageCount:58, validUntil:'15 Sep 2024', status:'active' },
+  { code:'SUMMER24', type:'platform', discountType:'percentage', value:10, minOrder:2000, maxCap:1500, usageLimit:null, usageCount:891, validUntil:'01 Aug 2024', status:'expired' },
+];
+
+let auditLog = [
+  { actor:'A. Rahman', action:'Vendor Approved',   entity:'Wood & Grain Studio', reason:'Meets all criteria',              date:'05 Jun 2024, 11:02' },
+  { actor:'A. Rahman', action:'Product Approved',  entity:'Hand-Carved Wooden Bowl', reason:'—',                           date:'06 Jun 2024, 09:14' },
+  { actor:'A. Rahman', action:'Trust Score Adjusted', entity:'Rakib Hasan',      reason:'COD order refused at delivery — score -15', date:'18 Jul 2024, 16:40' },
+  { actor:'A. Rahman', action:'Vendor Suspended',  entity:'Riverside Looms',     reason:'Repeated late shipments — under investigation', date:'22 Jul 2024, 10:21' },
+  { actor:'A. Rahman', action:'User Banned',        entity:'Mahmud Kabir',       reason:'Multiple fraudulent COD refusals', date:'23 Jul 2024, 14:55' },
+  { actor:'A. Rahman', action:'Settlement Approved', entity:'ST-2024-13 · Gemstone Grace', reason:'—',                     date:'26 Jul 2024, 08:30' },
+];
+
+// ══════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════
+const pageTitles = { overview:'Overview', vendors:'Vendor Applications', products:'Product Moderation', users:'Users & Trust', settlements:'Settlements', coupons:'Coupons & Promotions', audit:'Audit Log' };
+
+function showAdminPage(pageId, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+  document.querySelectorAll('.sb-link').forEach(l => l.classList.remove('active'));
+  if (el) el.classList.add('active');
+  document.getElementById('topbar-title').textContent = pageTitles[pageId];
+  closeDrawer();
+
+  if (pageId === 'overview')    renderOverview();
+  if (pageId === 'vendors')     renderVendorQueue();
+  if (pageId === 'products')    renderProductQueue();
+  if (pageId === 'users')       renderUsers();
+  if (pageId === 'settlements') renderSettlements();
+  if (pageId === 'coupons')     renderCoupons();
+  if (pageId === 'audit')       renderAuditLog();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateSidebarCounts() {
+  const pendingVendors = vendors.filter(v => v.status === 'submitted' || v.status === 'under_review').length;
+  document.getElementById('sb-count-vendors').textContent = pendingVendors;
+  document.getElementById('sb-count-vendors').classList.toggle('zero', pendingVendors === 0);
+  document.getElementById('sb-count-products').textContent = productQueue.length;
+  document.getElementById('sb-count-products').classList.toggle('zero', productQueue.length === 0);
+}
+
+// ══════════════════════════════════════════════════
+// OVERVIEW
+// ══════════════════════════════════════════════════
+function renderOverview() {
+  const pendingVendors = vendors.filter(v => v.status === 'submitted' || v.status === 'under_review');
+  document.getElementById('ov-pending-vendors').textContent = pendingVendors.length;
+  document.getElementById('ov-pending-products').textContent = productQueue.length;
+  document.getElementById('ov-open-settlements').textContent = settlements.filter(s => s.status !== 'paid').length;
+  document.getElementById('ov-flagged-users').textContent = users.filter(u => u.risk === 'high').length;
+
+  const attention = [
+    ...pendingVendors.map(v => ({ type:'Vendor', label:v.shop, date:v.submitted, status:v.status, action:() => openVendorDrawer(v.id) })),
+    ...productQueue.slice(0,3).map(p => ({ type:'Product', label:p.name, date:p.submitted, status:'pending_review', action:() => openProductDrawer(p.id) })),
+  ].slice(0, 6);
+
+  document.getElementById('ov-attention-list').innerHTML = attention.map((a, i) => `
+    <tr onclick="(${a.action.toString()})()">
+      <td><span class="pill pill-gray">${a.type}</span></td>
+      <td>${a.label}</td>
+      <td class="dim">${a.date}</td>
+      <td>${statusPill(a.status)}</td>
+      <td class="dim">Review →</td>
+    </tr>`).join('') || `<tr class="no-hover"><td colspan="5" class="dim" style="text-align:center;padding:24px;">Nothing needs attention right now.</td></tr>`;
+
+  document.getElementById('ov-audit-preview').innerHTML = auditLog.slice(0, 5).map(a => `
+    <tr class="no-hover"><td>${a.actor}</td><td>${a.action}</td><td class="dim">${a.entity}</td><td class="dim">${a.date}</td></tr>`).join('');
+}
+
+function statusPill(status) {
+  const map = {
+    submitted:      ['pill-warn', 'Submitted'],
+    under_review:   ['pill-warn', 'Under Review'],
+    pending_review: ['pill-warn', 'Pending Review'],
+    approved:       ['pill-sage', 'Approved'],
+    rejected:       ['pill-danger', 'Rejected'],
+    suspended:      ['pill-danger', 'Suspended'],
+    active:         ['pill-sage', 'Active'],
+    expired:        ['pill-gray', 'Expired'],
+    draft:          ['pill-gray', 'Draft'],
+    pending_review_settle: ['pill-warn', 'Pending Review'],
+    paid:           ['pill-sage', 'Paid'],
+  };
+  const [cls, label] = map[status] || ['pill-gray', status];
+  return `<span class="pill ${cls}">${label}</span>`;
+}
+
+// ══════════════════════════════════════════════════
+// VENDOR QUEUE
+// ══════════════════════════════════════════════════
+let vendorFilter = 'open';
+function renderVendorQueue() {
+  const filterBar = document.getElementById('vendor-filter-row');
+  const filters = [
+    ['open', 'Needs Review'], ['approved', 'Approved'], ['suspended', 'Suspended'], ['', 'All'],
+  ];
+  filterBar.innerHTML = filters.map(([key, label]) =>
+    `<button class="fpill ${vendorFilter === key ? 'active' : ''}" onclick="setVendorFilter('${key}')">${label}</button>`).join('');
+
+  let items = vendors;
+  if (vendorFilter === 'open') items = vendors.filter(v => v.status === 'submitted' || v.status === 'under_review');
+  else if (vendorFilter) items = vendors.filter(v => v.status === vendorFilter);
+
+  document.getElementById('vendor-tbl-body').innerHTML = items.map(v => `
+    <tr class="row-stripe ${v.status === 'approved' ? 'approved' : (v.status === 'suspended' || v.status === 'rejected') ? 'flagged' : 'pending'}" onclick="openVendorDrawer('${v.id}')">
+      <td style="font-weight:600;">${v.shop}</td>
+      <td>${v.owner}</td>
+      <td class="dim">${v.category}</td>
+      <td class="dim">${v.submitted}</td>
+      <td>${statusPill(v.status)}</td>
+      <td class="dim">Review →</td>
+    </tr>`).join('') || `<tr class="no-hover"><td colspan="6" class="dim" style="text-align:center;padding:24px;">No vendors in this view.</td></tr>`;
+
+  updateSidebarCounts();
+}
+
+function setVendorFilter(key) { vendorFilter = key; renderVendorQueue(); }
+
+function openVendorDrawer(id) {
+  const v = vendors.find(x => x.id === id);
+  if (!v) return;
+  document.getElementById('drawer-eyebrow').textContent = 'Vendor Application';
+  document.getElementById('drawer-title').textContent = v.shop;
+
+  const canReview = v.status === 'submitted' || v.status === 'under_review';
+  const canSuspend = v.status === 'approved';
+  const canReapprove = v.status === 'suspended';
+
+  document.getElementById('drawer-body').innerHTML = `
+    <div class="drawer-field"><p class="drawer-label">Status</p><div class="v">${statusPill(v.status)}</div></div>
+    <div class="drawer-field"><p class="drawer-label">Owner</p><p class="v">${v.owner}</p></div>
+    <div class="drawer-field"><p class="drawer-label">Craft Category</p><p class="v">${v.category}</p></div>
+    <div class="drawer-field"><p class="drawer-label">Submitted</p><p class="v">${v.submitted}</p></div>
+    <div class="drawer-field">
+      <p class="drawer-label">Verification Documents <span style="font-weight:400;text-transform:none;">(private — never public)</span></p>
+      ${v.docs.length ? v.docs.map(d => `<div style="display:flex;align-items:center;gap:6px;font-size:0.82rem;color:var(--ink-mid);margin-top:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>${d}</div>`).join('') : '<p class="v" style="color:var(--ink-light);">No documents submitted</p>'}
+    </div>
+    <div class="drawer-field">
+      <p class="drawer-label">Lifecycle History</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px;">
+        ${v.history.map(h => `<div style="border-left:2px solid var(--rule);padding-left:12px;"><p style="font-size:0.8rem;font-weight:600;color:var(--ink);">${statusPill(h.status)} <span style="font-weight:400;color:var(--ink-light);font-size:0.72rem;">${h.date}</span></p><p style="font-size:0.78rem;color:var(--ink-mid);margin-top:2px;">${h.note}</p></div>`).join('')}
+      </div>
+    </div>
+    <hr style="border:none;border-top:1.5px solid var(--rule);margin:20px 0;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      ${canReview ? `<button class="btn btn-approve" onclick="approveVendor('${v.id}')">Approve</button>
+                     <button class="btn btn-reject" onclick="openReasonModal({title:'Reject Application', hint:'This reason is shown to the vendor. Keep it constructive.', confirmLabel:'Reject', tone:'reject', onConfirm:(reason)=>rejectVendor('${v.id}', reason)})">Reject</button>` : ''}
+      ${canSuspend ? `<button class="btn btn-reject" onclick="openReasonModal({title:'Suspend Vendor', hint:'Suspending hides all of this vendor\\'s products immediately. Reason is required for the audit log.', confirmLabel:'Suspend', tone:'reject', onConfirm:(reason)=>suspendVendor('${v.id}', reason)})">Suspend Shop</button>` : ''}
+      ${canReapprove ? `<button class="btn btn-approve" onclick="approveVendor('${v.id}')">Re-approve</button>` : ''}
+    </div>
+  `;
+  openDrawer();
+}
+
+function approveVendor(id) {
+  const v = vendors.find(x => x.id === id);
+  if (!v) return;
+  const wasSuspended = v.status === 'suspended';
+  v.status = 'approved';
+  v.history.push({ status:'approved', date: today(), note: wasSuspended ? 'Re-approved by admin' : 'Approved — meets all criteria' });
+  logAudit('Vendor Approved', v.shop, '—');
+  showToast(`${v.shop} approved.`);
+  closeDrawer();
+  renderVendorQueue();
+}
+
+function rejectVendor(id, reason) {
+  const v = vendors.find(x => x.id === id);
+  if (!v) return;
+  v.status = 'rejected';
+  v.history.push({ status:'rejected', date: today(), note: reason });
+  logAudit('Vendor Rejected', v.shop, reason);
+  showToast(`${v.shop} rejected.`);
+  closeDrawer();
+  renderVendorQueue();
+}
+
+function suspendVendor(id, reason) {
+  const v = vendors.find(x => x.id === id);
+  if (!v) return;
+  v.status = 'suspended';
+  v.history.push({ status:'suspended', date: today(), note: reason });
+  logAudit('Vendor Suspended', v.shop, reason);
+  showToast(`${v.shop} suspended — products hidden from storefront.`);
+  closeDrawer();
+  renderVendorQueue();
+}
+
+// ══════════════════════════════════════════════════
+// PRODUCT MODERATION
+// ══════════════════════════════════════════════════
+function renderProductQueue() {
+  document.getElementById('product-tbl-body').innerHTML = productQueue.map(p => `
+    <tr class="row-stripe pending" onclick="openProductDrawer('${p.id}')">
+      <td><img src="${p.img}" alt="" style="width:40px;height:40px;object-fit:cover;"></td>
+      <td style="font-weight:600;">${p.name}</td>
+      <td class="dim">${p.seller}</td>
+      <td class="dim">${p.category}</td>
+      <td>${p.price}</td>
+      <td class="dim">${p.submitted}</td>
+      <td class="dim">Review →</td>
+    </tr>`).join('') || `<tr class="no-hover"><td colspan="7" class="dim" style="text-align:center;padding:24px;">Queue is empty — nothing pending review.</td></tr>`;
+  updateSidebarCounts();
+}
+
+function openProductDrawer(id) {
+  const p = productQueue.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('drawer-eyebrow').textContent = 'Product Review';
+  document.getElementById('drawer-title').textContent = p.name;
+  document.getElementById('drawer-body').innerHTML = `
+    <img src="${p.img}" alt="" style="width:100%;height:200px;object-fit:cover;margin-bottom:18px;border:1.5px solid var(--rule);">
+    <div class="drawer-field"><p class="drawer-label">Seller</p><p class="v">${p.seller}</p></div>
+    <div class="drawer-field"><p class="drawer-label">Category</p><p class="v">${p.category}</p></div>
+    <div class="drawer-field"><p class="drawer-label">Price</p><p class="v">${p.price}</p></div>
+    <div class="drawer-field"><p class="drawer-label">Submitted</p><p class="v">${p.submitted}</p></div>
+    <div class="drawer-field"><p class="drawer-label">Current Version</p><p class="v" style="color:var(--ink-light);">pending_review — not yet live on storefront</p></div>
+    <hr style="border:none;border-top:1.5px solid var(--rule);margin:20px 0;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-approve" onclick="approveProduct('${p.id}')">Approve</button>
+      <button class="btn btn-reject" onclick="openReasonModal({title:'Reject Product', hint:'Visible to the seller so they can fix and resubmit.', confirmLabel:'Reject', tone:'reject', onConfirm:(reason)=>rejectProduct('${p.id}', reason)})">Reject</button>
+      <button class="btn btn-ghost" onclick="openReasonModal({title:'Request Changes', hint:'Tell the seller what to update before this can be approved.', confirmLabel:'Send Request', tone:'reject', onConfirm:(reason)=>requestProductChanges('${p.id}', reason)})">Request Changes</button>
+    </div>
+  `;
+  openDrawer();
+}
+
+function approveProduct(id) {
+  const p = productQueue.find(x => x.id === id);
+  if (!p) return;
+  productQueue = productQueue.filter(x => x.id !== id);
+  logAudit('Product Approved', p.name, '—');
+  showToast(`"${p.name}" approved and live on the storefront.`);
+  closeDrawer();
+  renderProductQueue();
+}
+
+function rejectProduct(id, reason) {
+  const p = productQueue.find(x => x.id === id);
+  if (!p) return;
+  productQueue = productQueue.filter(x => x.id !== id);
+  logAudit('Product Rejected', p.name, reason);
+  showToast(`"${p.name}" rejected — seller notified.`);
+  closeDrawer();
+  renderProductQueue();
+}
+
+function requestProductChanges(id, reason) {
+  const p = productQueue.find(x => x.id === id);
+  if (!p) return;
+  logAudit('Product Changes Requested', p.name, reason);
+  showToast(`Change request sent to ${p.seller}.`);
+  closeDrawer();
+  renderProductQueue();
+}
+
+// ══════════════════════════════════════════════════
+// USERS & TRUST
+// ══════════════════════════════════════════════════
+let userRoleFilter = '';
+function setUserRoleFilter(role, btn) {
+  userRoleFilter = role;
+  document.querySelectorAll('#page-users .fpill').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderUsers();
+}
+
+function trustBarClass(score) { return score < 40 ? 'low' : score < 65 ? 'mid' : ''; }
+
+function renderUsers() {
+  const q = (document.getElementById('user-search').value || '').toLowerCase();
+  let items = users;
+  if (userRoleFilter) items = items.filter(u => u.role === userRoleFilter);
+  if (q) items = items.filter(u => u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q));
+
+  document.getElementById('user-tbl-body').innerHTML = items.map(u => `
+    <tr class="row-stripe ${u.banned ? 'flagged' : u.risk === 'high' ? 'flagged' : ''}" onclick="openUserDrawer('${u.id}')">
+      <td>
+        <span style="font-weight:600;">${u.name}</span>${u.banned ? ' <span class=\"pill pill-danger\" style=\"margin-left:6px;\">Banned</span>' : ''}
+        <p class="dim">${u.email}</p>
+      </td>
+      <td><span class="pill pill-gray">${roleLabel(u.role)}</span></td>
+      <td style="min-width:120px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="trust-bar-track" style="width:70px;"><div class="trust-bar-fill ${trustBarClass(u.trust)}" style="width:${u.trust}%;"></div></div>
+          <span class="dim mono">${u.trust}</span>
+        </div>
+      </td>
+      <td>${u.cod ? '<span class="pill pill-sage">Eligible</span>' : '<span class="pill pill-gray">Not Eligible</span>'}</td>
+      <td class="dim">${u.joined}</td>
+      <td class="dim">Manage →</td>
+    </tr>`).join('') || `<tr class="no-hover"><td colspan="6" class="dim" style="text-align:center;padding:24px;">No users match this search.</td></tr>`;
+}
+
+function roleLabel(role) { return { user:'Buyer', vendor_user:'Vendor', admin:'Admin' }[role] || role; }
+
+function openUserDrawer(id) {
+  const u = users.find(x => x.id === id);
+  if (!u) return;
+  document.getElementById('drawer-eyebrow').textContent = 'User';
+  document.getElementById('drawer-title').textContent = u.name;
+  document.getElementById('drawer-body').innerHTML = `
+    <div class="drawer-field"><p class="drawer-label">Email</p><p class="v">${u.email}</p></div>
+    <div class="drawer-field"><p class="drawer-label">Platform Role</p><p class="v">${roleLabel(u.role)}</p></div>
+    <div class="drawer-field"><p class="drawer-label">Member Since</p><p class="v">${u.joined}</p></div>
+    <div class="drawer-field">
+      <p class="drawer-label">Trust Score — <span class="mono">${u.trust}/100</span></p>
+      <div class="trust-bar-track" style="margin-top:6px;"><div class="trust-bar-fill ${trustBarClass(u.trust)}" style="width:${u.trust}%;"></div></div>
+      <p style="font-size:0.74rem;color:var(--ink-light);margin-top:6px;">Risk level: <strong style="color:var(--ink-mid);">${u.risk}</strong> · COD threshold: 65</p>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="btn btn-ghost btn-sm" onclick="openReasonModal({title:'Increase Trust Score', hint:'+10 points. Explain why for the audit trail.', confirmLabel:'Apply +10', tone:'approve', onConfirm:(reason)=>adjustTrust('${u.id}', 10, reason)})">+10</button>
+        <button class="btn btn-ghost btn-sm" onclick="openReasonModal({title:'Decrease Trust Score', hint:'-10 points. Explain why for the audit trail.', confirmLabel:'Apply −10', tone:'reject', onConfirm:(reason)=>adjustTrust('${u.id}', -10, reason)})">−10</button>
+      </div>
+    </div>
+    <div class="drawer-field">
+      <p class="drawer-label">Cash on Delivery</p>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="v">${u.cod ? 'Eligible' : 'Not eligible'}</span>
+        <button class="btn btn-ghost btn-sm" onclick="toggleCOD('${u.id}')">${u.cod ? 'Revoke' : 'Grant'} Override</button>
+      </div>
+    </div>
+    <hr style="border:none;border-top:1.5px solid var(--rule);margin:20px 0;">
+    ${u.role === 'admin' ? '<p class="dim">Admin accounts cannot be banned from this console.</p>' :
+      `<button class="btn ${u.banned ? 'btn-approve' : 'btn-reject'}" onclick="${u.banned ? `unbanUser('${u.id}')` : `openReasonModal({title:'Ban User', hint:'Reason is required and stored in the audit log.', confirmLabel:'Ban User', tone:'reject', onConfirm:(reason)=>banUser('${u.id}', reason)})`}">${u.banned ? 'Unban User' : 'Ban User'}</button>`}
+  `;
+  openDrawer();
+}
+
+function adjustTrust(id, delta, reason) {
+  const u = users.find(x => x.id === id);
+  if (!u) return;
+  u.trust = Math.max(0, Math.min(100, u.trust + delta));
+  u.cod = u.trust >= 65;
+  logAudit('Trust Score Adjusted', u.name, reason + ` (${delta > 0 ? '+' : ''}${delta})`);
+  showToast(`${u.name}'s trust score adjusted to ${u.trust}.`);
+  closeDrawer();
+  renderUsers();
+}
+
+function toggleCOD(id) {
+  const u = users.find(x => x.id === id);
+  if (!u) return;
+  u.cod = !u.cod;
+  logAudit('COD Eligibility Overridden', u.name, u.cod ? 'Manually granted' : 'Manually revoked');
+  showToast(`COD ${u.cod ? 'granted to' : 'revoked from'} ${u.name}.`);
+  closeDrawer();
+  renderUsers();
+}
+
+function banUser(id, reason) {
+  const u = users.find(x => x.id === id);
+  if (!u) return;
+  u.banned = true;
+  logAudit('User Banned', u.name, reason);
+  showToast(`${u.name} has been banned.`);
+  closeDrawer();
+  renderUsers();
+}
+
+function unbanUser(id) {
+  const u = users.find(x => x.id === id);
+  if (!u) return;
+  u.banned = false;
+  logAudit('User Unbanned', u.name, '—');
+  showToast(`${u.name} has been unbanned.`);
+  closeDrawer();
+  renderUsers();
+}
+
+// ══════════════════════════════════════════════════
+// SETTLEMENTS
+// ══════════════════════════════════════════════════
+function renderSettlements() {
+  document.getElementById('settlement-tbl-body').innerHTML = settlements.map((s, i) => {
+    const net = s.gross - s.commission - s.refunds;
+    return `
+    <tr class="row-stripe ${s.status === 'paid' ? 'approved' : s.status === 'pending_review' ? 'pending' : ''}" onclick="openSettlementDrawer(${i})">
+      <td class="mono dim">${s.id}</td>
+      <td style="font-weight:600;">${s.vendor}</td>
+      <td>$${s.gross.toFixed(2)}</td>
+      <td class="dim">−$${s.commission.toFixed(2)}</td>
+      <td class="dim">−$${s.refunds.toFixed(2)}</td>
+      <td style="font-weight:700;color:var(--forest);">$${net.toFixed(2)}</td>
+      <td>${settlementPill(s.status)}</td>
+      <td class="dim">Manage →</td>
+    </tr>`;
+  }).join('');
+}
+
+function settlementPill(status) {
+  const map = { draft:['pill-gray','Draft'], pending_review:['pill-warn','Pending Review'], approved:['pill-sage','Approved'], paid:['pill-sage','Paid'] };
+  const [cls, label] = map[status] || ['pill-gray', status];
+  return `<span class="pill ${cls}">${label}</span>`;
+}
+
+function openSettlementDrawer(i) {
+  const s = settlements[i];
+  const net = s.gross - s.commission - s.refunds;
+  document.getElementById('drawer-eyebrow').textContent = 'Settlement';
+  document.getElementById('drawer-title').textContent = `${s.id} — ${s.vendor}`;
+  document.getElementById('drawer-body').innerHTML = `
+    <div class="drawer-field"><p class="drawer-label">Status</p><div class="v">${settlementPill(s.status)}</div></div>
+    <div class="drawer-field"><p class="drawer-label">Gross Sales</p><p class="v">$${s.gross.toFixed(2)}</p></div>
+    <div class="drawer-field"><p class="drawer-label">Platform Commission (10%)</p><p class="v">−$${s.commission.toFixed(2)}</p></div>
+    <div class="drawer-field"><p class="drawer-label">Refund Deductions</p><p class="v">−$${s.refunds.toFixed(2)}</p></div>
+    <div class="drawer-field"><p class="drawer-label">Net Payout</p><p class="v" style="font-size:1.3rem;font-weight:700;color:var(--forest);">$${net.toFixed(2)}</p></div>
+    <hr style="border:none;border-top:1.5px solid var(--rule);margin:20px 0;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      ${s.status === 'pending_review' ? `<button class="btn btn-approve" onclick="approveSettlement(${i})">Approve</button>` : ''}
+      ${s.status === 'approved' ? `<button class="btn btn-primary" onclick="markSettlementPaid(${i})">Mark as Paid</button>` : ''}
+      ${s.status === 'paid' ? `<p class="dim">Paid settlements cannot be edited or deleted.</p>` : ''}
+    </div>
+  `;
+  openDrawer();
+}
+
+function approveSettlement(i) {
+  settlements[i].status = 'approved';
+  logAudit('Settlement Approved', `${settlements[i].id} · ${settlements[i].vendor}`, '—');
+  showToast('Settlement approved.');
+  closeDrawer();
+  renderSettlements();
+}
+
+function markSettlementPaid(i) {
+  settlements[i].status = 'paid';
+  logAudit('Settlement Marked Paid', `${settlements[i].id} · ${settlements[i].vendor}`, '—');
+  showToast('Settlement marked as paid and payout executed.');
+  closeDrawer();
+  renderSettlements();
+}
+
+function generateSettlementBatch() {
+  showToast('New bi-weekly settlement batch generated for all approved vendors.');
+  logAudit('Settlement Batch Generated', 'ST-2024-15', '—');
+}
+
+// ══════════════════════════════════════════════════
+// COUPONS
+// ══════════════════════════════════════════════════
+function renderCoupons() {
+  document.getElementById('coupon-tbl-body').innerHTML = coupons.map((c, i) => `
+    <tr onclick="openCouponEditor(${i})">
+      <td class="mono" style="font-weight:600;">${c.code}</td>
+      <td><span class="pill pill-gray">${c.type === 'platform' ? 'Platform-wide' : 'Vendor: ' + c.vendor}</span></td>
+      <td>${c.discountType === 'percentage' ? c.value + '%' : '$' + c.value.toFixed(2)}</td>
+      <td class="dim">Min order $${(c.minOrder/100).toFixed(0)}${c.maxCap ? ` · cap $${(c.maxCap/100).toFixed(0)}` : ''}</td>
+      <td class="dim">${c.usageCount}${c.usageLimit ? ' / ' + c.usageLimit : ''}</td>
+      <td class="dim">${c.validUntil}</td>
+      <td>${statusPill(c.status)}</td>
+      <td class="dim">Edit →</td>
+    </tr>`).join('');
+}
+
+function openCouponEditor(i) {
+  const c = i === null ? null : coupons[i];
+  document.getElementById('drawer-eyebrow').textContent = c ? 'Edit Coupon' : 'New Coupon';
+  document.getElementById('drawer-title').textContent = c ? c.code : 'Create Coupon';
+  document.getElementById('drawer-body').innerHTML = `
+    <div class="form-group"><label class="form-label">Code</label><input class="form-control mono" id="cf-code" value="${c ? c.code : ''}" placeholder="e.g. WELCOME15" style="text-transform:uppercase;"></div>
+    <div class="form-group"><label class="form-label">Type</label>
+      <select class="form-control" id="cf-type">
+        <option value="platform" ${c && c.type==='platform' ? 'selected':''}>Platform-wide</option>
+        <option value="vendor" ${c && c.type==='vendor' ? 'selected':''}>Vendor-specific</option>
+      </select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group"><label class="form-label">Discount Type</label>
+        <select class="form-control" id="cf-disctype">
+          <option value="percentage" ${c && c.discountType==='percentage' ? 'selected':''}>Percentage</option>
+          <option value="fixed" ${c && c.discountType==='fixed' ? 'selected':''}>Fixed Amount ($)</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Value</label><input class="form-control" id="cf-value" type="number" value="${c ? c.value : ''}"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group"><label class="form-label">Min Order ($)</label><input class="form-control" id="cf-minorder" type="number" value="${c ? (c.minOrder/100) : ''}"></div>
+      <div class="form-group"><label class="form-label">Usage Limit</label><input class="form-control" id="cf-limit" type="number" value="${c && c.usageLimit ? c.usageLimit : ''}" placeholder="Unlimited"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Valid Until</label><input class="form-control" id="cf-until" placeholder="e.g. 31 Dec 2024" value="${c ? c.validUntil : ''}"></div>
+    <div class="form-group"><label class="form-label">Status</label>
+      <select class="form-control" id="cf-status">
+        <option value="active" ${c && c.status==='active' ? 'selected':''}>Active</option>
+        <option value="inactive" ${c && c.status==='inactive' ? 'selected':''}>Inactive</option>
+        <option value="expired" ${c && c.status==='expired' ? 'selected':''}>Expired</option>
+      </select>
+    </div>
+    <p style="font-size:0.72rem;color:var(--ink-light);margin-bottom:18px;">Saved as a JSONB rules object — <span class="mono">{ discount, conditions }</span> — so new condition types don't require a schema change.</p>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="saveCoupon(${i === null ? 'null' : i})">${c ? 'Save Changes' : 'Create Coupon'}</button>
+    ${c ? `<button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:8px;" onclick="openReasonModal({title:'Deactivate Coupon', hint:'This coupon will stop applying at checkout immediately.', confirmLabel:'Deactivate', tone:'reject', onConfirm:()=>deactivateCoupon(${i})})">Deactivate</button>` : ''}
+  `;
+  openDrawer();
+}
+
+function saveCoupon(i) {
+  const code = document.getElementById('cf-code').value.trim().toUpperCase();
+  if (!code) { showToast('Coupon code is required.'); return; }
+  const data = {
+    code,
+    type: document.getElementById('cf-type').value,
+    discountType: document.getElementById('cf-disctype').value,
+    value: parseFloat(document.getElementById('cf-value').value) || 0,
+    minOrder: (parseFloat(document.getElementById('cf-minorder').value) || 0) * 100,
+    usageLimit: parseInt(document.getElementById('cf-limit').value) || null,
+    validUntil: document.getElementById('cf-until').value || 'No expiry',
+    status: document.getElementById('cf-status').value,
+    usageCount: i !== null ? coupons[i].usageCount : 0,
+  };
+  if (i === null) { coupons.push(data); logAudit('Coupon Created', code, '—'); }
+  else { coupons[i] = { ...coupons[i], ...data }; logAudit('Coupon Updated', code, '—'); }
+  showToast(`Coupon ${code} saved.`);
+  closeDrawer();
+  renderCoupons();
+}
+
+function deactivateCoupon(i) {
+  coupons[i].status = 'inactive';
+  logAudit('Coupon Deactivated', coupons[i].code, 'Deactivated by admin');
+  showToast(`${coupons[i].code} deactivated.`);
+  closeDrawer();
+  renderCoupons();
+}
+
+// ══════════════════════════════════════════════════
+// AUDIT LOG
+// ══════════════════════════════════════════════════
+function renderAuditLog() {
+  const q = (document.getElementById('audit-search').value || '').toLowerCase();
+  let items = [...auditLog].reverse();
+  if (q) items = items.filter(a => a.actor.toLowerCase().includes(q) || a.action.toLowerCase().includes(q) || a.entity.toLowerCase().includes(q));
+  document.getElementById('audit-tbl-body').innerHTML = items.map(a => `
+    <tr class="no-hover"><td>${a.actor}</td><td>${a.action}</td><td class="dim">${a.entity}</td><td class="dim">${a.reason}</td><td class="dim">${a.date}</td></tr>`).join('')
+    || `<tr class="no-hover"><td colspan="5" class="dim" style="text-align:center;padding:24px;">No matching audit entries.</td></tr>`;
+}
+
+function logAudit(action, entity, reason) {
+  auditLog.push({ actor: 'A. Rahman', action, entity, reason: reason || '—', date: today() + ', ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) });
+}
+
+function today() {
+  return new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+}
+
+// ══════════════════════════════════════════════════
+// DRAWER + REASON MODAL + TOAST
+// ══════════════════════════════════════════════════
+function openDrawer() {
+  document.getElementById('drawer-overlay').classList.add('show');
+  document.getElementById('drawer').classList.add('show');
+}
+function closeDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('show');
+  document.getElementById('drawer').classList.remove('show');
+}
+
+let pendingReasonAction = null;
+function openReasonModal({ title, hint, confirmLabel, tone, onConfirm }) {
+  document.getElementById('reason-title').textContent = title;
+  document.getElementById('reason-hint').textContent = hint;
+  document.getElementById('reason-text').value = '';
+  const btn = document.getElementById('reason-confirm-btn');
+  btn.textContent = confirmLabel;
+  btn.className = 'btn ' + (tone === 'approve' ? 'btn-approve' : 'btn-reject');
+  document.getElementById('reason-modal').classList.toggle('approve-tone', tone === 'approve');
+  pendingReasonAction = onConfirm;
+  document.getElementById('reason-overlay').classList.add('show');
+}
+function closeReasonModal() {
+  document.getElementById('reason-overlay').classList.remove('show');
+  pendingReasonAction = null;
+}
+function confirmReasonModal() {
+  const reason = document.getElementById('reason-text').value.trim();
+  if (!reason) { showToast('A reason is required for this action.'); return; }
+  document.getElementById('reason-overlay').classList.remove('show');
+  if (pendingReasonAction) pendingReasonAction(reason);
+  pendingReasonAction = null;
+}
+
+let toastTimer;
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 3400);
+}
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  updateSidebarCounts();
+  renderOverview();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Artisan's Market</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  /* ── BRAND TOKENS (shared with the main storefront) ─────────── */
+  :root {
+    --ink:          #2E2A25;  /* Charcoal Espresso — structure, headers, text */
+    --ink-dark:     #201C17;  /* deep espresso — dark surfaces */
+    --ink-mid:      #5C5347;
+    --ink-light:    #93897B;
+    --gold:         #C85A32;  /* Terracotta Clay — primary action / CTA */
+    --gold-light:   #DE7D57;
+    --sage:         #5F7464;  /* Eucalyptus Sage — secondary accent */
+    --sage-light:   #7C9188;
+    --sage-pale:    #A8B5A9;
+    --parchment:    #F4EBE1;  /* Warm Linen — secondary surface */
+    --paper:        #FAF9F6; /* Alabaster Cream — background */
+    --rule:         #E6DCCB;
+  }
+ 
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--paper);
+    color: var(--ink);
+  }
+  h1, h2, h3, h4, .serif { font-family: 'Cormorant Garamond', serif; }
+ 
+  /* Sharp, editorial corners everywhere — never pill-shaped */
+  .card, .btn, .field, .thumb, img { border-radius: 2px; }
+ 
+  /* Visible keyboard focus (accessibility floor) */
+  a:focus-visible, button:focus-visible, input:focus-visible,
+  textarea:focus-visible, select:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 2px;
+  }
+ 
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+ 
+  /* ── Buttons ──────────────────────────────────────────────── */
+  .btn {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 13px 30px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s, color 0.2s, transform 0.15s;
+    border: 1.5px solid transparent;
+  }
+  .btn-primary { background: var(--gold); color: #fff; }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-1px); }
+  .btn-secondary { background: transparent; color: var(--ink); border-color: var(--ink); }
+  .btn-secondary:hover { background: var(--parchment); }
+ 
+  /* ── Cards ────────────────────────────────────────────────── */
+  .card {
+    background: #fff;
+    border: 1.5px solid var(--rule);
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover { border-color: var(--ink); transform: translateY(-2px); }
+ 
+  .cat-label { color: var(--sage); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; }
+ 
+  .prod-badge {
+    position: absolute; top: 10px; left: 10px;
+    background: var(--gold); color: #fff;
+    font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 8px;
+  }
+  .wish-btn {
+    position: absolute; top: 8px; right: 8px;
+    background: #fff; border: 1.5px solid var(--rule);
+    padding: 6px; cursor: pointer; line-height: 0;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .wish-btn:hover, .wish-btn.active { background: #fbe6e0; border-color: #e3a58f; }
+  .wish-btn svg { width: 14px; height: 14px; color: var(--ink-light); }
+  .wish-btn.active svg { color: var(--gold); }
+ 
+  .filter-pill {
+    font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 7px 16px; border: 1.5px solid var(--rule); background: #fff; color: var(--ink-mid);
+    cursor: pointer; transition: all 0.2s;
+  }
+  .filter-pill:hover { border-color: var(--ink); color: var(--ink); }
+  .filter-pill.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+ 
+  .hero-bg {
+    background-image: url('https://placehold.co/1200x800/2E2A25/A8B5A9?text=Handcrafted+Goods');
+    background-size: cover;
+    background-position: center;
+  }
+</style>
+</head>
+<body class="antialiased">
+ 
+<div class="min-h-screen flex flex-col">
+ 
+  <!-- Header -->
+  <header class="border-b border-[var(--rule)] p-4 sticky top-0 z-50" style="background:var(--paper);">
+    <div class="container mx-auto flex justify-between items-center">
+      <a href="#" onclick="showPage('homepage-content', true)" class="serif text-2xl font-bold tracking-tight" style="color:var(--ink);">The <em style="color:var(--gold);font-style:italic;">Artisan's</em> Market</a>
+      <nav class="space-x-6 hidden md:flex items-center">
+        <a href="#" onclick="showPage('homepage-content', true)" class="text-sm font-medium hover:opacity-70 transition-opacity" style="color:var(--ink-mid);">Shop</a>
+        <a href="#" onclick="showPage('seller-page')" class="text-sm font-medium hover:opacity-70 transition-opacity" style="color:var(--ink-mid);">Sell</a>
+        <a href="#" onclick="showPage('profile-page')" class="text-sm font-medium hover:opacity-70 transition-opacity" style="color:var(--ink-mid);">Account</a>
+        <button onclick="showPage('wishlist-page')" class="relative flex items-center p-2 border border-[var(--rule)]" aria-label="Wishlist">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ink-mid)" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span id="wish-count" class="absolute -top-2 -right-2 flex items-center justify-center text-[10px] font-bold w-4 h-4" style="background:var(--gold);color:#fff;">0</span>
+        </button>
+      </nav>
+      <div class="md:hidden flex items-center gap-2">
+        <button onclick="showPage('wishlist-page')" class="relative p-2 border border-[var(--rule)]" aria-label="Wishlist">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ink-mid)" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span id="wish-count-mobile" class="absolute -top-2 -right-2 flex items-center justify-center text-[10px] font-bold w-4 h-4" style="background:var(--gold);color:#fff;">0</span>
+        </button>
+        <button id="menu-btn" class="focus:outline-none p-2" style="color:var(--ink-mid);" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+      </div>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden pt-4 px-2 space-y-1">
+      <a href="#" onclick="showPage('homepage-content', true)" class="block py-2 px-3 text-sm font-medium" style="color:var(--ink-mid);">Shop</a>
+      <a href="#" onclick="showPage('seller-page')" class="block py-2 px-3 text-sm font-medium" style="color:var(--ink-mid);">Sell</a>
+      <a href="#" onclick="showPage('profile-page')" class="block py-2 px-3 text-sm font-medium" style="color:var(--ink-mid);">Account</a>
+    </div>
+  </header>
+ 
+  <main class="flex-grow">
+    <!-- Hero -->
+    <section id="hero-section" class="hero-bg min-h-[56vh] flex items-center p-4 md:p-16">
+      <div class="max-w-lg p-8 md:p-10 shadow-none" style="background:var(--paper);border:1.5px solid var(--rule);">
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] mb-4" style="color:var(--gold);">Handcrafted with Purpose</p>
+        <h1 class="serif text-4xl md:text-5xl font-bold leading-[1.1] mb-4" style="color:var(--ink);">Where Every Piece Tells a Story</h1>
+        <p class="text-base mb-7" style="color:var(--ink-mid);">Discover one-of-a-kind art, jewelry, and home decor made with passion by independent artisans.</p>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button onclick="showPage('homepage-content', true)" class="btn btn-primary">Shop Now</button>
+          <button onclick="showPage('seller-page')" class="btn btn-secondary">Start Selling</button>
+        </div>
+      </div>
+    </section>
+ 
+    <div id="page-content" class="container mx-auto p-4 md:p-8">
+ 
+      <!-- Homepage -->
+      <section id="homepage-content">
+        <section class="py-12">
+          <h2 class="serif text-3xl font-bold mb-8" style="color:var(--ink);">Shop by Category</h2>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+            <div class="card cursor-pointer" onclick="renderProducts('Jewelry')">
+              <img src="https://placehold.co/600x400/C85A32/fff?text=Jewelry" alt="Jewelry" class="w-full h-32 md:h-44 object-cover">
+              <div class="p-4 text-center"><h3 class="font-semibold text-sm" style="color:var(--ink);">Jewelry</h3></div>
+            </div>
+            <div class="card cursor-pointer" onclick="renderProducts('Pottery')">
+              <img src="https://placehold.co/600x400/5F7464/fff?text=Pottery" alt="Pottery" class="w-full h-32 md:h-44 object-cover">
+              <div class="p-4 text-center"><h3 class="font-semibold text-sm" style="color:var(--ink);">Pottery</h3></div>
+            </div>
+            <div class="card cursor-pointer" onclick="renderProducts('Home Decor')">
+              <img src="https://placehold.co/600x400/2E2A25/fff?text=Home+Decor" alt="Home Decor" class="w-full h-32 md:h-44 object-cover">
+              <div class="p-4 text-center"><h3 class="font-semibold text-sm" style="color:var(--ink);">Home Decor</h3></div>
+            </div>
+            <div class="card cursor-pointer" onclick="renderProducts('Textiles')">
+              <img src="https://placehold.co/600x400/93897B/fff?text=Textiles" alt="Textiles" class="w-full h-32 md:h-44 object-cover">
+              <div class="p-4 text-center"><h3 class="font-semibold text-sm" style="color:var(--ink);">Textiles</h3></div>
+            </div>
+          </div>
+        </section>
+ 
+        <section class="py-12">
+          <div class="flex items-center justify-between mb-6 pb-3" style="border-bottom:1.5px solid var(--rule);">
+            <h2 id="product-grid-title" class="serif text-3xl font-bold" style="color:var(--ink);">Trending Products</h2>
+            <button id="back-to-all-products-btn" onclick="renderProducts()" class="hidden text-xs font-semibold uppercase tracking-wide" style="color:var(--sage);">&larr; All Products</button>
+          </div>
+          <div class="flex gap-2 flex-wrap mb-6" id="filter-bar">
+            <button class="filter-pill active" data-cat="">All</button>
+            <button class="filter-pill" data-cat="Jewelry">Jewelry</button>
+            <button class="filter-pill" data-cat="Pottery">Pottery</button>
+            <button class="filter-pill" data-cat="Home Decor">Home Decor</button>
+            <button class="filter-pill" data-cat="Textiles">Textiles</button>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6" id="product-grid"></div>
+        </section>
+      </section>
+ 
+      <!-- Product Detail -->
+      <section id="product-detail-page" class="hidden py-12">
+        <button onclick="showPage('homepage-content', true)" class="mb-6 text-xs font-semibold uppercase tracking-wide flex items-center" style="color:var(--ink-light);">
+          <svg class="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+          Back to Shopping
+        </button>
+        <div class="card p-6 md:p-12 flex flex-col md:flex-row gap-10">
+          <div class="md:w-1/2">
+            <img id="product-main-image" src="" alt="Product image" class="w-full h-auto mb-3 object-cover" style="border:1.5px solid var(--rule);">
+            <div class="grid grid-cols-3 gap-2">
+              <img id="thumb-1" src="" alt="Thumbnail 1" class="thumb w-full h-20 object-cover cursor-pointer" style="border:1.5px solid var(--rule);" onclick="changeImage(this)">
+              <img id="thumb-2" src="" alt="Thumbnail 2" class="thumb w-full h-20 object-cover cursor-pointer" style="border:1.5px solid var(--rule);" onclick="changeImage(this)">
+              <img id="thumb-3" src="" alt="Thumbnail 3" class="thumb w-full h-20 object-cover cursor-pointer" style="border:1.5px solid var(--rule);" onclick="changeImage(this)">
+            </div>
+          </div>
+          <div class="md:w-1/2">
+            <p id="product-cat" class="cat-label mb-2"></p>
+            <h1 id="product-title" class="serif text-3xl md:text-4xl font-bold mb-2" style="color:var(--ink);"></h1>
+            <p class="text-sm mb-4" style="color:var(--ink-light);">by <a id="seller-link" href="#" class="font-semibold underline" style="color:var(--sage);"></a></p>
+            <div class="flex items-center mb-4">
+              <span style="color:var(--sage);">★★★★★</span>
+              <span class="text-sm ml-2" style="color:var(--ink-light);">(12 Reviews)</span>
+            </div>
+            <p id="product-price" class="serif text-3xl font-bold mb-6" style="color:var(--ink);"></p>
+ 
+            <div id="custom-options-container" class="space-y-4 mb-6 hidden p-5" style="background:var(--parchment);border:1.5px solid var(--rule);">
+              <h3 class="text-xs font-bold uppercase tracking-wide" style="color:var(--gold);">Customization Options</h3>
+              <div>
+                <label for="preset-option" class="block text-xs font-semibold uppercase tracking-wide mb-1" style="color:var(--ink-mid);">Select an option</label>
+                <select id="preset-option" class="field w-full p-3 border text-sm" style="border-color:var(--rule);background:#fff;"></select>
+              </div>
+              <div>
+                <label for="custom-instructions" class="block text-xs font-semibold uppercase tracking-wide mb-1" style="color:var(--ink-mid);">Special instructions</label>
+                <textarea id="custom-instructions" rows="3" class="field w-full p-3 border text-sm" style="border-color:var(--rule);background:#fff;" placeholder="e.g. Lighter wood finish, engrave my initials…"></textarea>
+              </div>
+              <div>
+                <label for="file-upload" class="block text-xs font-semibold uppercase tracking-wide mb-1" style="color:var(--ink-mid);">Attach a file (optional)</label>
+                <input type="file" id="file-upload" class="field w-full p-2 border text-sm" style="border-color:var(--rule);background:#fff;">
+              </div>
+            </div>
+ 
+            <div class="mb-6">
+              <h3 class="text-xs font-bold uppercase tracking-wide mb-2" style="color:var(--gold);">Description</h3>
+              <p id="product-description" class="text-sm leading-relaxed" style="color:var(--ink-mid);"></p>
+            </div>
+ 
+            <div class="flex gap-2">
+              <button id="add-to-cart-btn" class="btn btn-primary flex-1">Add to Cart</button>
+              <button id="detail-wish-btn" onclick="toggleWishlistFromDetail()" class="p-3 border" style="border-color:var(--rule);" aria-label="Save to wishlist">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink-light)" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              </button>
+            </div>
+            <div id="add-to-cart-message" class="hidden mt-4 p-3 text-sm" style="background:var(--parchment);border:1.5px solid var(--sage);color:var(--ink);"></div>
+          </div>
+        </div>
+ 
+        <section class="py-12">
+          <h2 class="serif text-3xl font-bold mb-8" style="color:var(--ink);">You might also like…</h2>
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6" id="suggested-products-grid"></div>
+        </section>
+      </section>
+ 
+      <!-- Seller Page -->
+      <section id="seller-page" class="hidden py-12">
+        <button onclick="showPage('homepage-content', true)" class="mb-6 text-xs font-semibold uppercase tracking-wide flex items-center" style="color:var(--ink-light);">
+          <svg class="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+          Back to Homepage
+        </button>
+        <div class="card p-6 md:p-14 max-w-4xl mx-auto text-center">
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] mb-3" style="color:var(--gold);">For Artisans</p>
+          <h2 class="serif text-3xl font-bold mb-4" style="color:var(--ink);">Sell Your Creations with Ease</h2>
+          <p class="text-base mb-10 max-w-xl mx-auto" style="color:var(--ink-mid);">Join our community of artisans and connect with customers who love handmade goods.</p>
+          <div class="grid md:grid-cols-3 gap-6 mb-12 text-left">
+            <div class="p-6" style="background:var(--parchment);border:1.5px solid var(--rule);">
+              <div class="w-11 h-11 flex items-center justify-center mb-4" style="background:var(--ink);">
+                <svg class="w-5 h-5" fill="none" stroke="#fff" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              </div>
+              <h3 class="serif font-bold text-lg mb-2" style="color:var(--ink);">Reach More Customers</h3>
+              <p class="text-sm" style="color:var(--ink-mid);">Tap into a passionate community of buyers actively looking for handcrafted goods.</p>
+            </div>
+            <div class="p-6" style="background:var(--parchment);border:1.5px solid var(--rule);">
+              <div class="w-11 h-11 flex items-center justify-center mb-4" style="background:var(--ink);">
+                <svg class="w-5 h-5" fill="none" stroke="#fff" viewBox="0 0 24 24" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="1"/><line x1="8" y1="21" x2="16" y2="21"/></svg>
+              </div>
+              <h3 class="serif font-bold text-lg mb-2" style="color:var(--ink);">Simple Store Management</h3>
+              <p class="text-sm" style="color:var(--ink-mid);">Manage products, track orders, and handle payments from one dashboard.</p>
+            </div>
+            <div class="p-6" style="background:var(--parchment);border:1.5px solid var(--rule);">
+              <div class="w-11 h-11 flex items-center justify-center mb-4" style="background:var(--ink);">
+                <svg class="w-5 h-5" fill="none" stroke="#fff" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <h3 class="serif font-bold text-lg mb-2" style="color:var(--ink);">Wholesale Materials</h3>
+              <p class="text-sm" style="color:var(--ink-mid);">Source raw materials directly through our wholesale hub, once approved.</p>
+            </div>
+          </div>
+          <div class="p-8 text-left" style="background:var(--parchment);border:1.5px solid var(--rule);">
+            <h3 class="serif text-2xl font-bold mb-6" style="color:var(--ink);">Ready to Get Started?</h3>
+            <form id="seller-form" class="space-y-4">
+              <div>
+                <label for="name" class="block text-xs font-semibold uppercase tracking-wide mb-1" style="color:var(--ink-mid);">Full Name</label>
+                <input type="text" id="name" name="name" required class="field w-full p-3 border text-sm" style="border-color:var(--rule);background:#fff;">
+              </div>
+              <div>
+                <label for="email" class="block text-xs font-semibold uppercase tracking-wide mb-1" style="color:var(--ink-mid);">Email Address</label>
+                <input type="email" id="email" name="email" required class="field w-full p-3 border text-sm" style="border-color:var(--rule);background:#fff;">
+              </div>
+              <div>
+                <label for="shop-name" class="block text-xs font-semibold uppercase tracking-wide mb-1" style="color:var(--ink-mid);">Your Shop Name</label>
+                <input type="text" id="shop-name" name="shop-name" required class="field w-full p-3 border text-sm" style="border-color:var(--rule);background:#fff;">
+              </div>
+              <button type="submit" class="btn btn-primary w-full">Start Your Journey</button>
+            </form>
+            <div id="message-box" class="hidden mt-4 p-3 text-sm" style="background:#fff;border:1.5px solid var(--sage);color:var(--ink);">
+              Thank you for your interest! We'll review your application and be in touch soon.
+            </div>
+          </div>
+        </div>
+      </section>
+ 
+      <!-- Profile Page -->
+      <section id="profile-page" class="hidden py-12">
+        <button onclick="showPage('homepage-content', true)" class="mb-6 text-xs font-semibold uppercase tracking-wide flex items-center" style="color:var(--ink-light);">
+          <svg class="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+          Back to Homepage
+        </button>
+        <div class="card p-6 md:p-12 max-w-4xl mx-auto">
+          <div class="flex gap-6 mb-8" style="border-bottom:1.5px solid var(--rule);">
+            <button onclick="showProfileSection('buyer')" id="buyer-tab" class="px-1 pb-3 text-sm font-semibold uppercase tracking-wide" style="border-bottom:2px solid var(--ink);color:var(--ink);">Buyer Profile</button>
+            <button onclick="showProfileSection('seller')" id="seller-tab" class="px-1 pb-3 text-sm font-semibold uppercase tracking-wide" style="border-bottom:2px solid transparent;color:var(--ink-light);">Seller Profile</button>
+          </div>
+ 
+          <div id="buyer-profile-section">
+            <h2 class="serif text-2xl font-bold mb-2" style="color:var(--ink);">Welcome, Jane Doe</h2>
+            <p class="text-sm mb-8" style="color:var(--ink-mid);">Manage your account settings and view your order history.</p>
+            <div class="p-6" style="background:var(--parchment);border:1.5px solid var(--rule);">
+              <h3 class="text-xs font-bold uppercase tracking-wide mb-4" style="color:var(--gold);">Order History</h3>
+              <div id="order-history-list" class="space-y-3"></div>
+            </div>
+          </div>
+ 
+          <div id="seller-profile-section" class="hidden">
+            <div class="flex flex-col md:flex-row items-center gap-6 mb-8">
+              <img src="https://placehold.co/150x150/2E2A25/fff?text=Artisan" alt="Seller profile" class="w-24 h-24 object-cover" style="border:1.5px solid var(--rule);">
+              <div>
+                <h2 class="serif text-2xl font-bold" style="color:var(--ink);">Wood & Grain Studio</h2>
+                <p class="text-sm" style="color:var(--ink-mid);">Selling beautifully handcrafted wooden bowls, cutting boards, and home decor.</p>
+              </div>
+            </div>
+            <div class="p-6" style="background:var(--parchment);border:1.5px solid var(--rule);">
+              <h3 class="text-xs font-bold uppercase tracking-wide mb-4" style="color:var(--gold);">My Products</h3>
+              <div id="seller-products-list" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+ 
+      <!-- Wishlist Page -->
+      <section id="wishlist-page" class="hidden py-12">
+        <button onclick="showPage('homepage-content', true)" class="mb-6 text-xs font-semibold uppercase tracking-wide flex items-center" style="color:var(--ink-light);">
+          <svg class="w-3.5 h-3.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+          Back to Shopping
+        </button>
+        <div class="flex items-center justify-between mb-6 pb-3" style="border-bottom:1.5px solid var(--rule);">
+          <h2 class="serif text-3xl font-bold" style="color:var(--ink);">My Wishlist</h2>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6" id="wishlist-grid"></div>
+        <div id="wishlist-empty" class="hidden text-center py-20" style="color:var(--ink-light);">
+          <svg class="w-12 h-12 mx-auto mb-4 opacity-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <h3 class="serif text-xl mb-1" style="color:var(--ink-mid);">Your wishlist is empty</h3>
+          <p class="text-sm">Tap the heart on any product to save it here.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+ 
+  <footer class="p-10 mt-auto" style="background:var(--ink-dark);color:var(--sage-pale);">
+    <div class="container mx-auto text-center">
+      <p class="serif text-lg mb-4" style="color:#fff;">The <em style="color:var(--gold-light);font-style:italic;">Artisan's</em> Market</p>
+      <p class="text-sm">&copy; 2025 The Artisan's Market. All rights reserved.</p>
+      <div class="mt-4 space-x-6 text-sm">
+        <a href="#" class="hover:text-white transition-colors">About Us</a>
+        <a href="#" class="hover:text-white transition-colors">Contact</a>
+        <a href="#" class="hover:text-white transition-colors">Help &amp; FAQs</a>
+      </div>
+    </div>
+  </footer>
+</div>
+ 
+<script>
+    // Mock data for products
+    const products = [
+        { id: 1, name: "Hand-Carved Wooden Bowl", category: "Home Decor", price: "$55.00", seller: "Wood & Grain Studio", sellerLink: "#",
+          description: "This unique wooden bowl is hand-carved from sustainable walnut wood, featuring a rich, dark grain and a smooth, polished finish. Perfect for serving or as a decorative centerpiece.",
+          images: ["https://placehold.co/600x600/2E2A25/fff?text=Bowl", "https://placehold.co/600x600/5C5347/fff?text=Bowl+2", "https://placehold.co/600x600/93897B/fff?text=Bowl+3"],
+          customizable: true, customOptions: ["Light Wood Finish", "Dark Wood Finish", "Personalized Engraving"] },
+        { id: 2, name: "Embroidered Throw Pillow", category: "Home Decor", price: "$45.00", seller: "Stitch & Thread", sellerLink: "#",
+          description: "This soft, linen throw pillow features a delicate floral embroidery pattern. It's a perfect accent piece to add a touch of handcrafted charm to your living room or bedroom.",
+          images: ["https://placehold.co/600x600/F4EBE1/2E2A25?text=Pillow", "https://placehold.co/600x600/E6DCCB/2E2A25?text=Pillow+2", "https://placehold.co/600x600/93897B/fff?text=Pillow+3"],
+          customizable: false },
+        { id: 3, name: "Ceramic Vase", category: "Home Decor", price: "$85.00", seller: "Clay & Co.", sellerLink: "#",
+          description: "A tall, elegant ceramic vase with a unique textured surface. Perfect for a single stem or a beautiful bouquet, it adds a touch of modern artistry to any room.",
+          images: ["https://placehold.co/600x600/5F7464/fff?text=Vase", "https://placehold.co/600x600/7C9188/fff?text=Vase+2", "https://placehold.co/600x600/A8B5A9/2E2A25?text=Vase+3"],
+          customizable: false },
+        { id: 4, name: "Ceramic Coffee Mug", category: "Pottery", price: "$28.00", seller: "Clay & Co.", sellerLink: "#",
+          description: "A rustic, handmade ceramic mug with a beautiful speckled glaze. Each piece is slightly different, making it truly one-of-a-kind. Dishwasher and microwave safe.",
+          images: ["https://placehold.co/600x600/C85A32/fff?text=Mug", "https://placehold.co/600x600/DE7D57/fff?text=Mug+2", "https://placehold.co/600x600/2E2A25/fff?text=Mug+3"],
+          customizable: true, customOptions: ["Ocean Blue Glaze", "Forest Green Glaze", "Matte White Glaze"] },
+        { id: 5, name: "Hand-Painted Dinner Plate", category: "Pottery", price: "$40.00", seller: "The Pottery Barn", sellerLink: "#",
+          description: "A durable and stylish dinner plate with a subtle, hand-painted floral pattern. Made from high-fired stoneware, it's built to last and safe for daily use.",
+          images: ["https://placehold.co/600x600/93897B/fff?text=Plate", "https://placehold.co/600x600/5C5347/fff?text=Plate+2", "https://placehold.co/600x600/2E2A25/fff?text=Plate+3"],
+          customizable: false },
+        { id: 6, name: "Textured Serving Bowl", category: "Pottery", price: "$65.00", seller: "Clay & Co.", sellerLink: "#",
+          description: "A large serving bowl with a unique ridged texture on the exterior and a smooth, food-safe glaze on the interior. Perfect for salads, fruits, or as a decorative piece.",
+          images: ["https://placehold.co/600x600/5F7464/fff?text=Bowl", "https://placehold.co/600x600/7C9188/fff?text=Bowl+2", "https://placehold.co/600x600/A8B5A9/2E2A25?text=Bowl+3"],
+          customizable: false },
+        { id: 7, name: "Handwoven Jute Rug", category: "Textiles", price: "$150.00", seller: "Woven Wonders", sellerLink: "#",
+          description: "This eco-friendly rug is handwoven from natural jute fibers, offering a rustic texture and natural color that complements any room. Each rug is unique.",
+          images: ["https://placehold.co/600x600/F4EBE1/2E2A25?text=Rug", "https://placehold.co/600x600/E6DCCB/2E2A25?text=Rug+2", "https://placehold.co/600x600/93897B/fff?text=Rug+3"],
+          customizable: false },
+        { id: 8, name: "Silk Scarf", category: "Textiles", price: "$95.00", seller: "The Silk Weaver", sellerLink: "#",
+          description: "A soft, luxurious silk scarf with a hand-dyed pattern. Lightweight and elegant, it's a perfect accessory for any occasion.",
+          images: ["https://placehold.co/600x600/C85A32/fff?text=Scarf", "https://placehold.co/600x600/DE7D57/fff?text=Scarf+2", "https://placehold.co/600x600/2E2A25/fff?text=Scarf+3"],
+          customizable: false },
+        { id: 9, name: "Patchwork Quilt", category: "Textiles", price: "$220.00", seller: "Granny's Quilts", sellerLink: "#",
+          description: "A cozy and colorful patchwork quilt made with a mix of cotton and flannel fabrics. Each square is hand-stitched with care, making it a true heirloom piece.",
+          images: ["https://placehold.co/600x600/93897B/fff?text=Quilt", "https://placehold.co/600x600/5C5347/fff?text=Quilt+2", "https://placehold.co/600x600/2E2A25/fff?text=Quilt+3"],
+          customizable: true, customOptions: ["Choose Your Colors", "Add a Name", "Custom Size"] },
+        { id: 10, name: "Sterling Silver Earrings", category: "Jewelry", price: "$65.00", seller: "Gemstone Grace", sellerLink: "#",
+          description: "Elegant, dangle earrings made from polished sterling silver and a small, natural aquamarine stone. Lightweight and perfect for everyday wear.",
+          images: ["https://placehold.co/600x600/5F7464/fff?text=Earrings", "https://placehold.co/600x600/7C9188/fff?text=Earrings+2", "https://placehold.co/600x600/A8B5A9/2E2A25?text=Earrings+3"],
+          customizable: false },
+        { id: 11, name: "Handcrafted Silver Necklace", category: "Jewelry", price: "$85.00", seller: "Silver & Stone Co.", sellerLink: "#",
+          description: "A delicate silver chain with a small, hand-polished pendant. Minimalist and timeless, this necklace is designed to be cherished for years to come.",
+          images: ["https://placehold.co/600x600/93897B/fff?text=Necklace", "https://placehold.co/600x600/5C5347/fff?text=Necklace+2", "https://placehold.co/600x600/2E2A25/fff?text=Necklace+3"],
+          customizable: true, customOptions: ["Choose Chain Length", "Engrave Initials"] },
+        { id: 12, name: "Gemstone Ring", category: "Jewelry", price: "$120.00", seller: "Gemstone Grace", sellerLink: "#",
+          description: "A beautiful sterling silver ring featuring a raw, uncut gemstone. Available in various stones, including amethyst and tourmaline.",
+          images: ["https://placehold.co/600x600/C85A32/fff?text=Ring", "https://placehold.co/600x600/DE7D57/fff?text=Ring+2", "https://placehold.co/600x600/2E2A25/fff?text=Ring+3"],
+          customizable: true, customOptions: ["Amethyst", "Tourmaline", "Garnet"] },
+    ];
+ 
+    const mockBuyerOrders = [
+        { orderId: "AM-2024-5231", date: "August 15, 2024", total: "$83.00", status: "Delivered", item: "Ceramic Coffee Mug" },
+        { orderId: "AM-2024-4902", date: "July 28, 2024", total: "$75.00", status: "Delivered", item: "Embroidered Throw Pillow" },
+        { orderId: "AM-2024-4115", date: "June 10, 2024", total: "$55.00", status: "Delivered", item: "Hand-Carved Wooden Bowl" },
+    ];
+ 
+    const mockSellerProducts = [
+         { name: "Hand-Carved Wooden Bowl", image: "https://placehold.co/300x300/2E2A25/fff?text=Bowl" },
+         { name: "Rustic Serving Platter", image: "https://placehold.co/300x300/5F7464/fff?text=Platter" },
+         { name: "Walnut Cutting Board", image: "https://placehold.co/300x300/F4EBE1/2E2A25?text=Board" }
+    ];
+ 
+    let wishlist = [];
+    let currentCategory = null;
+ 
+    function heartSvg(active) {
+        return `<svg viewBox="0 0 24 24" fill="${active ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+    }
+ 
+    function toggleWishlist(id, event) {
+        event.stopPropagation();
+        const idx = wishlist.indexOf(id);
+        if (idx > -1) wishlist.splice(idx, 1); else wishlist.push(id);
+        updateWishCount();
+        // refresh whichever grid is currently visible
+        if (!document.getElementById('homepage-content').classList.contains('hidden')) renderProducts(currentCategory);
+        if (!document.getElementById('wishlist-page').classList.contains('hidden')) renderWishlistPage();
+        if (!document.getElementById('product-detail-page').classList.contains('hidden')) updateDetailWishBtn();
+    }
+ 
+    function updateWishCount() {
+        document.getElementById('wish-count').textContent = wishlist.length;
+        document.getElementById('wish-count-mobile').textContent = wishlist.length;
+    }
+ 
+    function buildCard(product) {
+        const wished = wishlist.includes(product.id);
+        const card = document.createElement('div');
+        card.className = 'card cursor-pointer relative';
+        card.innerHTML = `
+            <div class="relative">
+                <img src="${product.images[0]}" alt="${product.name}" class="w-full h-40 md:h-48 object-cover">
+                ${product.customizable ? '<span class="prod-badge">Custom</span>' : ''}
+                <button class="wish-btn ${wished ? 'active' : ''}" aria-label="Save to wishlist">${heartSvg(wished)}</button>
+            </div>
+            <div class="p-4">
+                <p class="cat-label mb-1">${product.category}</p>
+                <h3 class="font-semibold text-sm mb-1" style="color:var(--ink);">${product.name}</h3>
+                <p class="text-xs mb-2" style="color:var(--ink-light);">by ${product.seller}</p>
+                <p class="serif font-bold text-lg" style="color:var(--ink);">${product.price}</p>
+            </div>
+        `;
+        card.querySelector('.wish-btn').addEventListener('click', (e) => toggleWishlist(product.id, e));
+        card.addEventListener('click', () => showProductDetail(product));
+        return card;
+    }
+ 
+    function renderProducts(category = null) {
+        currentCategory = category;
+        const productGrid = document.getElementById('product-grid');
+        const productGridTitle = document.getElementById('product-grid-title');
+        const backBtn = document.getElementById('back-to-all-products-btn');
+ 
+        let productsToRender = products;
+        let title = "Trending Products";
+ 
+        if (category) {
+            productsToRender = products.filter(p => p.category === category);
+            title = category;
+            backBtn.classList.remove('hidden');
+        } else {
+            backBtn.classList.add('hidden');
+        }
+ 
+        document.querySelectorAll('#filter-bar .filter-pill').forEach(btn => {
+            btn.classList.toggle('active', btn.getAttribute('data-cat') === (category || ''));
+        });
+ 
+        productGridTitle.textContent = title;
+        productGrid.innerHTML = '';
+        if (!productsToRender.length) {
+            productGrid.innerHTML = `<p class="col-span-full text-center py-16 text-sm" style="color:var(--ink-light);">No products found.</p>`;
+            return;
+        }
+        productsToRender.forEach(p => productGrid.appendChild(buildCard(p)));
+    }
+ 
+    document.getElementById('filter-bar').addEventListener('click', (e) => {
+        const btn = e.target.closest('.filter-pill');
+        if (!btn) return;
+        const cat = btn.getAttribute('data-cat');
+        renderProducts(cat || null);
+    });
+ 
+    function showPage(pageId, isHome = false) {
+        const pages = ['homepage-content', 'product-detail-page', 'seller-page', 'profile-page', 'wishlist-page'];
+        const heroSection = document.getElementById('hero-section');
+ 
+        heroSection.classList.toggle('hidden', !(pageId === 'homepage-content' && isHome));
+ 
+        pages.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
+        });
+        const currentPage = document.getElementById(pageId);
+        if (currentPage) currentPage.classList.remove('hidden');
+ 
+        if (pageId === 'wishlist-page') renderWishlistPage();
+ 
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+ 
+    let currentProduct = null;
+ 
+    function showProductDetail(product) {
+        currentProduct = product;
+        document.getElementById('product-main-image').src = product.images[0];
+        document.getElementById('product-main-image').alt = product.name;
+        document.getElementById('product-cat').textContent = product.category;
+        document.getElementById('product-title').textContent = product.name;
+        document.getElementById('seller-link').textContent = product.seller;
+        document.getElementById('seller-link').href = product.sellerLink;
+        document.getElementById('product-price').textContent = product.price;
+        document.getElementById('product-description').textContent = product.description;
+ 
+        document.getElementById('thumb-1').src = product.images[0];
+        document.getElementById('thumb-2').src = product.images[1];
+        document.getElementById('thumb-3').src = product.images[2];
+ 
+        const customOptionsContainer = document.getElementById('custom-options-container');
+        const presetSelect = document.getElementById('preset-option');
+        if (product.customizable) {
+            customOptionsContainer.classList.remove('hidden');
+            presetSelect.innerHTML = '';
+            product.customOptions.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option;
+                optionElement.textContent = option;
+                presetSelect.appendChild(optionElement);
+            });
+        } else {
+            customOptionsContainer.classList.add('hidden');
+        }
+ 
+        document.getElementById('custom-instructions').value = '';
+        document.getElementById('file-upload').value = null;
+        document.getElementById('add-to-cart-message').classList.add('hidden');
+        updateDetailWishBtn();
+ 
+        const addToCartBtn = document.getElementById('add-to-cart-btn');
+        addToCartBtn.onclick = () => handleAddToCart(product);
+ 
+        renderSuggestedProducts(product);
+        showPage('product-detail-page');
+    }
+ 
+    function updateDetailWishBtn() {
+        if (!currentProduct) return;
+        const btn = document.getElementById('detail-wish-btn');
+        const active = wishlist.includes(currentProduct.id);
+        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="${active ? 'var(--gold)' : 'none'}" stroke="${active ? 'var(--gold)' : 'var(--ink-light)'}" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;
+    }
+ 
+    function toggleWishlistFromDetail() {
+        if (!currentProduct) return;
+        const idx = wishlist.indexOf(currentProduct.id);
+        if (idx > -1) wishlist.splice(idx, 1); else wishlist.push(currentProduct.id);
+        updateWishCount();
+        updateDetailWishBtn();
+    }
+ 
+    function renderSuggestedProducts(currentProduct) {
+        const grid = document.getElementById('suggested-products-grid');
+        grid.innerHTML = '';
+        const others = products.filter(p => p.id !== currentProduct.id).sort(() => 0.5 - Math.random());
+        others.slice(0, 4).forEach(p => grid.appendChild(buildCard(p)));
+    }
+ 
+    function changeImage(thumbnail) {
+        document.getElementById('product-main-image').src = thumbnail.src;
+    }
+ 
+    function handleAddToCart(product) {
+        const messageBox = document.getElementById('add-to-cart-message');
+        let message = `Added ${product.name} to your cart.`;
+ 
+        if (product.customizable) {
+            const selectedOption = document.getElementById('preset-option').value;
+            const instructions = document.getElementById('custom-instructions').value;
+            const fileInput = document.getElementById('file-upload');
+            const attachedFile = fileInput.files[0];
+ 
+            message += " Your customization details: ";
+            if (selectedOption) message += `Option: ${selectedOption}. `;
+            if (instructions) message += `Instructions: "${instructions}". `;
+            if (attachedFile) message += `File attached: ${attachedFile.name}.`;
+        }
+ 
+        messageBox.textContent = message;
+        messageBox.classList.remove('hidden');
+    }
+ 
+    function renderWishlistPage() {
+        const grid = document.getElementById('wishlist-grid');
+        const empty = document.getElementById('wishlist-empty');
+        const items = products.filter(p => wishlist.includes(p.id));
+        grid.innerHTML = '';
+        if (!items.length) {
+            empty.classList.remove('hidden');
+        } else {
+            empty.classList.add('hidden');
+            items.forEach(p => grid.appendChild(buildCard(p)));
+        }
+    }
+ 
+    const menuBtn = document.getElementById('menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    menuBtn.addEventListener('click', () => {
+        const isHidden = mobileMenu.classList.toggle('hidden');
+        menuBtn.setAttribute('aria-expanded', String(!isHidden));
+    });
+ 
+    const sellerForm = document.getElementById('seller-form');
+    const messageBox = document.getElementById('message-box');
+    sellerForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        messageBox.classList.remove('hidden');
+        sellerForm.reset();
+    });
+ 
+    function renderBuyerOrders() {
+        const list = document.getElementById('order-history-list');
+        list.innerHTML = '';
+        mockBuyerOrders.forEach(order => {
+            const orderItem = document.createElement('div');
+            orderItem.className = 'p-4 flex flex-col sm:flex-row justify-between sm:items-center';
+            orderItem.style.background = '#fff';
+            orderItem.style.border = '1.5px solid var(--rule)';
+            orderItem.innerHTML = `
+                <div>
+                    <p class="font-semibold text-sm" style="color:var(--ink);">Order #${order.orderId}</p>
+                    <p class="text-xs mt-0.5" style="color:var(--ink-light);">${order.item} · ${order.date}</p>
+                </div>
+                <div class="mt-2 sm:mt-0 text-right">
+                    <p class="serif font-bold" style="color:var(--ink);">${order.total}</p>
+                    <span class="text-xs font-semibold uppercase tracking-wide" style="color:var(--sage);">${order.status}</span>
+                </div>
+            `;
+            list.appendChild(orderItem);
+        });
+    }
+ 
+    function renderSellerProducts() {
+        const list = document.getElementById('seller-products-list');
+        list.innerHTML = '';
+        mockSellerProducts.forEach(product => {
+            const productItem = document.createElement('div');
+            productItem.className = 'card';
+            productItem.innerHTML = `
+                <img src="${product.image}" alt="${product.name}" class="w-full h-28 object-cover">
+                <div class="p-2 text-center">
+                    <p class="font-semibold text-xs" style="color:var(--ink);">${product.name}</p>
+                </div>
+            `;
+            list.appendChild(productItem);
+        });
+    }
+ 
+    function showProfileSection(section) {
+        const buyerSection = document.getElementById('buyer-profile-section');
+        const sellerSection = document.getElementById('seller-profile-section');
+        const buyerTab = document.getElementById('buyer-tab');
+        const sellerTab = document.getElementById('seller-tab');
+ 
+        if (section === 'buyer') {
+            buyerSection.classList.remove('hidden');
+            sellerSection.classList.add('hidden');
+            buyerTab.style.borderBottomColor = 'var(--ink)';
+            buyerTab.style.color = 'var(--ink)';
+            sellerTab.style.borderBottomColor = 'transparent';
+            sellerTab.style.color = 'var(--ink-light)';
+            renderBuyerOrders();
+        } else {
+            buyerSection.classList.add('hidden');
+            sellerSection.classList.remove('hidden');
+            sellerTab.style.borderBottomColor = 'var(--ink)';
+            sellerTab.style.color = 'var(--ink)';
+            buyerTab.style.borderBottomColor = 'transparent';
+            buyerTab.style.color = 'var(--ink-light)';
+            renderSellerProducts();
+        }
+    }
+ 
+    window.onload = () => {
+        renderProducts();
+        renderBuyerOrders();
+        updateWishCount();
+    };
+</script>
+</body>
+</html>
+ 
